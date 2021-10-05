@@ -8,9 +8,10 @@
 from fastapi.security import OAuth2PasswordBearer
 from server.dependencies.get_environment_cached import get_environment_cached
 
-environment = get_environment_cached()
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f'{environment.AUTHENTICATOR_DNS}/users/token'
-)
+def get_oauth2_scheme():
+    environment = get_environment_cached()
+    return OAuth2PasswordBearer(
+        tokenUrl=f'{environment.AUTHENTICATOR_DNS}/users/token'
+    )
 

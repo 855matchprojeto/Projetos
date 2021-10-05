@@ -5,8 +5,9 @@
 
 class RoleBasedPermission:
 
-    READ_ALL_USERS = {
-        'name': 'READ_ALL_USERS',
-        'description': 'Capacidade de visualizar todos os usuários do sistema'
-    }
+    pass
+    # READ_ALL_USERS = {
+    #     'name': 'READ_ALL_USERS',
+    #     'description': 'Capacidade de visualizar todos os usuários do sistema'
+    # }
 
