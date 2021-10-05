@@ -6,12 +6,15 @@
 """
 
 from fastapi.security import OAuth2PasswordBearer
-from server.dependencies.get_environment_cached import get_environment_cached
+from server.configuration.environment import AuthEnvironment
+import pathlib
 
+environment = AuthEnvironment(
+    _env_file=f"{str(pathlib.Path(__file__).parents[2])}/.env/PROJETOS_AUTH.env",
+    _env_file_encoding="utf-8"
+)
 
-def get_oauth2_scheme():
-    environment = get_environment_cached()
-    return OAuth2PasswordBearer(
-        tokenUrl=f'{environment.AUTHENTICATOR_DNS}/users/token'
-    )
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f'{environment.AUTHENTICATOR_DNS}/users/token'
+)
 

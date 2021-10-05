@@ -1,5 +1,5 @@
 from fastapi import Depends
-from server.dependencies.oauth2 import get_oauth2_scheme
+from server.dependencies.oauth2 import oauth2_scheme
 from server.dependencies.session import get_session
 from server.configuration.db import AsyncSession
 from server.schemas.usuario_schema import CurrentUserToken
@@ -22,7 +22,7 @@ MAIN_LOGGER = get_main_logger()
 async def get_current_user(
     required_security_permission_scopes: SecurityScopes = Depends(get_security_scopes),
     session: AsyncSession = Depends(get_session),
-    token: str = Depends(get_oauth2_scheme()),
+    token: str = Depends(oauth2_scheme),
     environment: Environment = Depends(get_environment_cached)
 ) -> CurrentUserToken:
 

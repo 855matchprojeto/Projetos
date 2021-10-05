@@ -35,10 +35,13 @@ jobs:
 
       - name: Run unit tests
         run: pytest server/tests/unit --cov-config=.github/workflows/unit.coveragerc --cov=server --cov-report term-missing
+        env:
+          AUTHENTICATOR_DNS: ./token
 
       - name: Run integration tests
         run: pytest server/tests/integration --cov-config=.github/workflows/integration.coveragerc --cov=server --cov-report term-missing
         env:
+          AUTHENTICATOR_DNS: ./token
           TEST_DB_HOST: localhost
           TEST_DB_USER: postgres
           TEST_DB_PASS: 1234

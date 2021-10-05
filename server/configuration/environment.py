@@ -26,8 +26,6 @@ class Environment(BaseSettings):
     ACCESS_TOKEN_SECRET_KEY: str
     ACCESS_TOKEN_ALGORITHM: str
 
-    AUTHENTICATOR_DNS: str
-
     @staticmethod
     def get_db_conn_async(database_url: str):
         return re.sub(r'\bpostgres://\b', "postgresql+asyncpg://", database_url, count=1)
@@ -84,5 +82,18 @@ class MigrationEnvironment(BaseSettings):
 
     class Config:
         env_file = '.env/PROJETOS_MIGRATION.env'
+        env_file_encoding = 'utf-8'
+
+
+class AuthEnvironment(BaseSettings):
+    """
+        Classe criada para separar a dependência de autenticação das demais
+        Sem ela, teriamos que ter várias variáveis de ambiente nos testes sem necessidade
+    """
+
+    AUTHENTICATOR_DNS: str
+
+    class Config:
+        env_file = '.env/PROJETOS_AUTH.env'
         env_file_encoding = 'utf-8'
 
