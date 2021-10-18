@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from server.configuration import exceptions
 from server.controllers.usuario_controller import usuario_router
 from server.controllers.ping_controller import ping_router
+from server.controllers.projetos_controller import projetos_router
+from server.controllers.funcao_projetos_controller import funcao_projeto_router
+from server.controllers.historico_projetos_controller import historico_projetos_router
+from server.controllers.relacao_projeto_usuario_controller import relacao_projeto_usuario_router
 from starlette_context.middleware import RawContextMiddleware
 from starlette_context import plugins
 from server.configuration.custom_logging import MICROSERVICE_LOGGER_KWARGS, Logger
@@ -13,7 +17,11 @@ from fastapi.exceptions import RequestValidationError
 
 routers = [
     usuario_router,
-    ping_router
+    ping_router,
+    projetos_router,
+    funcao_projeto_router,
+    historico_projetos_router,
+    relacao_projeto_usuario_router
 ]
 
 

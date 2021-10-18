@@ -1,3 +1,4 @@
+from fastapi import APIRouter
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
@@ -5,9 +6,13 @@ from typing import List
 from server.services.historico_projetos_service import HistoricoProjetosService
 from server.schemas.historico_projetos_schema import HistoricoProjetosInput, HistoricoProjetosOutput
 
-router = InferringRouter(tags=["Histórico Projetos"])
+router = APIRouter()
+historico_projetos_router = dict(
+    router=router,
+    prefix="/historico_projetos",
+    tags=["Histórico Projetos"],
+)
 
-@cbv(router)
 class Funcoes_ProjetoController:
     @router.get(path="/historico_projetos", response_model=List[HistoricoProjetosOutput])
     async def get_historico_projetos(self, id: Optional[int] = None, guid: Optional[str] = None):
