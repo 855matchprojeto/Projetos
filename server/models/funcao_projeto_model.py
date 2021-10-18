@@ -19,4 +19,3 @@ class FuncaoProjeto(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     nome = Column(String(), nullable=False, unique=True)
     descricao = Column(String(), unique=True)
-
