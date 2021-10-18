@@ -26,6 +26,9 @@ class ProjetosOutput(AuthenticatorModelOutput):
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
 
+    def convert_to_dict(self):
+        return self.dict()
+
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
