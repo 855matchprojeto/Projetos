@@ -9,14 +9,13 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 
-class RelacaoProjetoUsuarioModel(db.Base, AuthenticatorBase):
+class RelacaoProjetoEntidadeModel(db.Base, AuthenticatorBase):
 
     def __init__(self, **kwargs):
-        super(RelacaoProjetoUsuarioModel, self).__init__(**kwargs)
+        super(RelacaoProjetoEntidadeModel, self).__init__(**kwargs)
 
-    __tablename__ = "tb_rel_projeto_user"
+    __tablename__ = "tb_rel_projeto_entidade"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
-    id_funcao = Column(BigInteger, ForeignKey("tb_funcao_projeto.id"))
-    guid_user = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
+    id_entidade = Column(BigInteger, ForeignKey("tb_entidade_externa.id"))

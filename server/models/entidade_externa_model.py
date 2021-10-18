@@ -1,22 +1,21 @@
 import uuid
 from uuid import UUID as GUID
 
-from sqlalchemy import Column, BigInteger, String
+from sqlalchemy import Column, BigInteger, String, ForeignKey, DateTime
 from server.models import AuthenticatorBase
 from server.configuration import db
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime
 
 
-
-class ProjetosModel(db.Base, AuthenticatorBase):
+class EntidadeExternaModel(db.Base, AuthenticatorBase):
 
     def __init__(self, **kwargs):
-        super(ProjetosModel, self).__init__(**kwargs)
+        super(EntidadeExternaModel, self).__init__(**kwargs)
 
-    __tablename__ = "tb_projetos"
+    __tablename__ = "tb_entidade_externa"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
-    titulo = Column(String(), nullable=False, unique=True)
-    descricao = Column(String(), unique=True)
+    nome = Column(String(), nullable=False)

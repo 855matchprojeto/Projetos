@@ -9,18 +9,15 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 
 
-
-
-class HistoricoProjetoModel(db.Base, AuthenticatorBase):
+class HistoricoProjetoTagModel(db.Base, AuthenticatorBase):
 
     def __init__(self, **kwargs):
-        super(HistoricoProjetoModel, self).__init__(**kwargs)
+        super(HistoricoProjetoTagModel, self).__init__(**kwargs)
 
-    __tablename__ = "tb_historico_projeto"
+    __tablename__ = "tb_historico_projeto_tag"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
-    guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
-    titulo = Column(String(), nullable=False, unique=True)
-    descricao = Column(String(), unique=True)
+    id_tags = Column(BigInteger, ForeignKey("tb_tags.id"))
     data = Column(DateTime, default=datetime.now)
+    mudanca = Column(String(), nullable=False)
