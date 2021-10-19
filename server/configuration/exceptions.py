@@ -107,6 +107,15 @@ class UserNotFoundException(ApiBaseException):
     ) -> None:
         super().__init__(status_code, error_id, message, detail)
 
+class ProjectNotFoundException(ApiBaseException):
+    def __init__(
+        self,
+        status_code=status.HTTP_404_NOT_FOUND,
+        error_id='PROJECT_NOT_FOUND',
+        message='O projeto não foi encontrado no sistema',
+        detail=''
+    ) -> None:
+        super().__init__(status_code, error_id, message, detail)
 
 class InvalidUsernamePasswordException(ApiBaseException):
     def __init__(

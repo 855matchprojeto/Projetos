@@ -5,3 +5,15 @@ class FuncoesProjetoService():
     Attributes:
 
     """
+
+    def get(self, id, guid):
+        pass
+
+    def create(self, data):
+        pass
+
+    def update(self, data):
+        pass
+
+    def delete(self, guid):
+        pass

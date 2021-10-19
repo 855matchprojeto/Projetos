@@ -18,5 +18,5 @@ class ProjetosModel(db.Base, AuthenticatorBase):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
-    titulo = Column(String(), nullable=False, unique=True)
-    descricao = Column(String(), unique=True)
+    titulo = Column(String(), nullable=False)
+    descricao = Column(String())
