@@ -5,9 +5,7 @@ from typing import List, Optional
 from uuid import UUID as GUID
 
 
-
 class ProjetosInput(AuthenticatorModelInput):
-
     titulo: str = Field(example='Projeto Exemplo')
     descricao: str = Field(example='Isso é um projeto')
 

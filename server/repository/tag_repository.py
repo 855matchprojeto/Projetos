@@ -1,60 +1,60 @@
 from server.configuration.db import AsyncSession
-from server.configuration.exceptions import FuncaoProjectNotFoundException
-from server.models.funcao_projeto_model import FuncaoProjetoModel
+from server.configuration.exceptions import TagNotFoundException
+from server.models.tag_model import TagModel
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from server.configuration.environment import Environment
 from sqlalchemy import select, insert, literal_column, delete, update
 
 
-class FuncoesProjetoRepository:
+class TagRepository:
 
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
         self.environment = environment
 
-    async def insere_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
+    async def insere_tag(self, tag_dict: dict) -> TagModel:
         stmt = (
-            insert(FuncaoProjetoModel).
+            insert(TagModel).
             returning(literal_column('*')).
-            values(**funcao_dict)
+            values(**tag_dict)
         )
         query = await self.db_session.execute(stmt)
         row_to_dict = dict(query.fetchone())
-        return FuncaoProjetoModel(**row_to_dict)
+        return TagModel(**row_to_dict)
 
-    async def atualiza_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
-        new_user_entity = FuncaoProjetoModel(**funcao_dict)
+    async def atualiza_tag(self, tag_dict: dict) -> TagModel:
+        new_user_entity = TagModel(**tag_dict)
         self.db_session.add(new_user_entity)
         await self.db_session.flush()
         return new_user_entity
 
-    async def find_funcoes_by_filtros(self, filtros: List) -> List[FuncaoProjetoModel]:
+    async def find_tags_by_filtros(self, filtros: List) -> List[TagModel]:
         stmt = (
-            select(FuncaoProjetoModel).
+            select(TagModel).
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
-    async def delete_funcoes_by_filtros(self, filtros: List):
+    async def delete_tags_by_filtros(self, filtros: List):
         stmt = (
-            delete(FuncaoProjetoModel).
+            delete(TagModel).
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
 
-    async def update_funcao_by_guid(self, guid, projeto_update_dict: dict) -> FuncaoProjetoModel:
+    async def update_tag_by_guid(self, guid, projeto_update_dict: dict) -> TagModel:
         stmt = (
-            update(FuncaoProjetoModel).
+            update(TagModel).
             returning(literal_column('*')).
-            where(FuncaoProjetoModel.guid == guid).
+            where(TagModel.guid == guid).
             values(**projeto_update_dict)
         )
         query = await self.db_session.execute(stmt)
         if query.rowcount == 0:
-            raise FuncaoProjectNotFoundException()
+            raise TagNotFoundException()
         row_to_dict = dict(query.fetchone())
-        return FuncaoProjetoModel(**row_to_dict)
+        return TagModel(**row_to_dict)

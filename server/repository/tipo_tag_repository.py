@@ -1,60 +1,60 @@
 from server.configuration.db import AsyncSession
-from server.configuration.exceptions import FuncaoProjectNotFoundException
-from server.models.funcao_projeto_model import FuncaoProjetoModel
+from server.configuration.exceptions import TagNotFoundException
+from server.models.tipo_tag_model import TipoDeTagModel
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from server.configuration.environment import Environment
 from sqlalchemy import select, insert, literal_column, delete, update
 
 
-class FuncoesProjetoRepository:
+class TipoTagRepository:
 
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
         self.environment = environment
 
-    async def insere_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
+    async def insere_tipo_tag(self, tipo_tag_dict: dict) -> TipoDeTagModel:
         stmt = (
-            insert(FuncaoProjetoModel).
+            insert(TipoDeTagModel).
             returning(literal_column('*')).
-            values(**funcao_dict)
+            values(**tipo_tag_dict)
         )
         query = await self.db_session.execute(stmt)
         row_to_dict = dict(query.fetchone())
-        return FuncaoProjetoModel(**row_to_dict)
+        return TipoDeTagModel(**row_to_dict)
 
-    async def atualiza_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
-        new_user_entity = FuncaoProjetoModel(**funcao_dict)
+    async def atualiza_tipo_tag(self, tipo_tag_dict: dict) -> TipoDeTagModel:
+        new_user_entity = TipoDeTagModel(**tipo_tag_dict)
         self.db_session.add(new_user_entity)
         await self.db_session.flush()
         return new_user_entity
 
-    async def find_funcoes_by_filtros(self, filtros: List) -> List[FuncaoProjetoModel]:
+    async def find_tipos_tag_by_filtros(self, filtros: List) -> List[TipoDeTagModel]:
         stmt = (
-            select(FuncaoProjetoModel).
+            select(TipoDeTagModel).
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
-    async def delete_funcoes_by_filtros(self, filtros: List):
+    async def delete_tipo_tag_by_filtros(self, filtros: List):
         stmt = (
-            delete(FuncaoProjetoModel).
+            delete(TipoDeTagModel).
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
 
-    async def update_funcao_by_guid(self, guid, projeto_update_dict: dict) -> FuncaoProjetoModel:
+    async def update_tipo_tag_by_guid(self, guid, projeto_update_dict: dict) -> TipoDeTagModel:
         stmt = (
-            update(FuncaoProjetoModel).
+            update(TipoDeTagModel).
             returning(literal_column('*')).
-            where(FuncaoProjetoModel.guid == guid).
+            where(TipoDeTagModel.guid == guid).
             values(**projeto_update_dict)
         )
         query = await self.db_session.execute(stmt)
         if query.rowcount == 0:
-            raise FuncaoProjectNotFoundException()
+            raise TagNotFoundException()
         row_to_dict = dict(query.fetchone())
-        return FuncaoProjetoModel(**row_to_dict)
+        return TipoDeTagModel(**row_to_dict)

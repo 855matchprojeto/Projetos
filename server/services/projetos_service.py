@@ -6,19 +6,20 @@ from sqlalchemy import or_, and_
 
 
 class ProjetosService():
-    """Classe definida para representar a lógica especifica de um Projeto
-    """
 
     def __init__(self, proj_repo: Optional[ProjetoRepository] = None, environment: Optional[Environment] = None):
         self.proj_repo = proj_repo
         self.environment = environment
 
     async def get(self, id=None, guid=None):
-        filtros = [
-            or_(
-                ProjetosModel.id == id,
-                ProjetosModel.guid == guid
-            )]
+        if id == None and guid == None:
+            filtros = []
+        else:
+            filtros = [
+                or_(
+                    ProjetosModel.id == id,
+                    ProjetosModel.guid == guid
+                )]
         return await self.proj_repo.find_projetos_by_filtros(filtros=filtros)
 
     async def create(self, projeto_input):

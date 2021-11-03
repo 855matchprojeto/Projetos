@@ -17,7 +17,8 @@ class TagModel(db.Base, AuthenticatorBase):
     __tablename__ = "tb_tag"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
+    guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     nome = Column(String(), nullable=False)
     nome_de_referencia = Column(String(), nullable=False)
-    id_tipo_de_tag = Column(BigInteger, ForeignKey("tb_tipos_de_tags.id"))
+    id_tipo_de_tag = Column(BigInteger, ForeignKey("tb_tipo_de_tag.id"))
     descricao = Column(String(), nullable=False)

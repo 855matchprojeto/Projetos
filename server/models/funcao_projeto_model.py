@@ -8,14 +8,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 
-class FuncaoProjeto(db.Base, AuthenticatorBase):
+class FuncaoProjetoModel(db.Base, AuthenticatorBase):
 
     def __init__(self, **kwargs):
-        super(FuncaoProjeto, self).__init__(**kwargs)
+        super(FuncaoProjetoModel, self).__init__(**kwargs)
 
     __tablename__ = "tb_funcao_projeto"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
-    nome = Column(String(), nullable=False, unique=True)
-    descricao = Column(String(), unique=True)
+    nome = Column(String(), nullable=False)
+    descricao = Column(String())

@@ -8,7 +8,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 
-
 class ProjetosModel(db.Base, AuthenticatorBase):
 
     def __init__(self, **kwargs):

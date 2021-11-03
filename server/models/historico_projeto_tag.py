@@ -18,6 +18,6 @@ class HistoricoProjetoTagModel(db.Base, AuthenticatorBase):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
-    id_tags = Column(BigInteger, ForeignKey("tb_tags.id"))
+    id_tags = Column(BigInteger, ForeignKey("tb_tag.id"))
     data = Column(DateTime, default=datetime.now)
     mudanca = Column(String(), nullable=False)
