@@ -22,22 +22,22 @@ class TagService():
                 )]
         return await self.tag_repo.find_tags_by_filtros(filtros=filtros)
 
-    async def create(self, funcao_input):
-        nova_funcao_dict = funcao_input.convert_to_dict()
+    async def create(self, tag_input):
+        nova_tag_dict = tag_input.convert_to_dict()
         # Insere no banco de dados e retorna a tag
 
-        teste = await self.tag_repo.insere_tag(nova_funcao_dict)
+        teste = await self.tag_repo.insere_tag(nova_tag_dict)
         return teste
 
-    async def update(self, funcao_input):
-        novo_funcao_dict = funcao_input.convert_to_dict()
+    async def update(self, tag_input):
+        nova_tag_dict = tag_input.convert_to_dict()
         # Insere no banco de dados e retorna a tag
-        return await self.tag_repo.atualiza_tag(novo_funcao_dict)
+        return await self.tag_repo.atualiza_tag(nova_tag_dict)
 
-    async def update_by_guid(self, guid, funcao_input):
-        nova_funcao_dict = funcao_input.convert_to_dict()
+    async def update_by_guid(self, guid, tag_input):
+        nova_tag_dict = tag_input.convert_to_dict()
         # Insere no banco de dados e retorna a tag
-        return await self.tag_repo.update_tag_by_guid(guid, nova_funcao_dict)
+        return await self.tag_repo.update_tag_by_guid(guid, nova_tag_dict)
 
     async def delete(self, guid):
         return await self.tag_repo.delete_tags_by_filtros(filtros=[TagModel.guid == guid])
