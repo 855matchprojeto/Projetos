@@ -43,7 +43,6 @@ class TagRepository:
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
-        return query.scalars().all()
 
 
     async def update_tag_by_guid(self, guid, projeto_update_dict: dict) -> TagModel:

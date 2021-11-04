@@ -20,7 +20,7 @@ class TipoTagService():
                     TipoDeTagModel.id == id,
                     TipoDeTagModel.guid == guid
                 )]
-        return await self.tipo_tag_repo.find_tipo_tags_by_filtros(filtros=filtros)
+        return await self.tipo_tag_repo.find_tipos_tag_by_filtros(filtros=filtros)
 
     async def create(self, tipo_tag_input):
         nova_tipo_tag_dict = tipo_tag_input.convert_to_dict()
@@ -40,4 +40,4 @@ class TipoTagService():
         return await self.tipo_tag_repo.update_tipo_tag_by_guid(guid, nova_tipo_tag_dict)
 
     async def delete(self, guid):
-        return await self.tipo_tag_repo.delete_tags_by_filtros(filtros=[TipoDeTagModel.guid == guid])
+        return await self.tipo_tag_repo.delete_tipo_tag_by_filtros(filtros=[TipoDeTagModel.guid == guid])

@@ -141,6 +141,28 @@ class TagNotFoundException(ApiBaseException):
         super().__init__(status_code, error_id, message, detail)
 
 
+class TipoTagNotFoundException(ApiBaseException):
+    def __init__(
+            self,
+            status_code=status.HTTP_404_NOT_FOUND,
+            error_id='TYPE_TAG_NOT_FOUND',
+            message='O Tipo Tag não foi encontrada no sistema',
+            detail=''
+    ) -> None:
+        super().__init__(status_code, error_id, message, detail)
+
+
+class EntidadeExternaNotFoundException(ApiBaseException):
+    def __init__(
+            self,
+            status_code=status.HTTP_404_NOT_FOUND,
+            error_id='ENTIDADE_EXTERNA_NOT_FOUND',
+            message='A Entidade externa não foi encontrada no sistema',
+            detail=''
+    ) -> None:
+        super().__init__(status_code, error_id, message, detail)
+
+
 class InvalidUsernamePasswordException(ApiBaseException):
     def __init__(
             self,

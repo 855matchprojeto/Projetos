@@ -43,8 +43,6 @@ class TipoTagRepository:
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
-        return query.scalars().all()
-
 
     async def update_tipo_tag_by_guid(self, guid, projeto_update_dict: dict) -> TipoDeTagModel:
         stmt = (

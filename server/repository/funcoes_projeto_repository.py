@@ -43,8 +43,6 @@ class FuncoesProjetoRepository:
             where(*filtros)
         )
         query = await self.db_session.execute(stmt)
-        return query.scalars().all()
-
 
     async def update_funcao_by_guid(self, guid, projeto_update_dict: dict) -> FuncaoProjetoModel:
         stmt = (

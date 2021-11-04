@@ -10,7 +10,6 @@ class TagInput(AuthenticatorModelInput):
     nome_de_referencia: str = Field(example='Nome de referência Tag Exemplo')
     descricao: str = Field(example='Descrição da tag')
     id_tipo_de_tag: int = Field(example="1")
-    guid: Optional[GUID] = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
 
     def convert_to_dict(self):
         return self.dict()

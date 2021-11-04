@@ -6,6 +6,9 @@ from server.controllers.projetos_controller import projetos_router
 from server.controllers.funcao_projetos_controller import funcao_projeto_router
 from server.controllers.historico_projetos_controller import historico_projetos_router
 from server.controllers.relacao_projeto_usuario_controller import relacao_projeto_usuario_router
+from server.controllers.tag_controller import tag_router
+from server.controllers.tipo_tag_controller import tipo_tag_router
+from server.controllers.entidade_externa_controller import entidade_externa_router
 from starlette_context.middleware import RawContextMiddleware
 from starlette_context import plugins
 from server.configuration.custom_logging import MICROSERVICE_LOGGER_KWARGS, Logger
@@ -21,7 +24,10 @@ routers = [
     projetos_router,
     funcao_projeto_router,
     historico_projetos_router,
-    relacao_projeto_usuario_router
+    relacao_projeto_usuario_router,
+    tag_router,
+    tipo_tag_router,
+    entidade_externa_router
 ]
 
 
