@@ -1,9 +1,10 @@
 from server.configuration.db import AsyncSession
 from server.models.permissao_model import Permissao
 
-from server.models.projetos_model import ProjetosModel
-from server.models.entidade_externa_model import EntidadeExternaModel
-from server.models.tag_model import TagModel
+from server.models.historico_projetos_model import HistoricoProjetoModel
+from server.models.historico_projeto_entidade import HistoricoProjetoEntidadeModel
+from server.models.historico_projeto_tag import HistoricoProjetoTagModel
+from server.models.historico_projetos_usuarios_model import HistoricoProjetoUsuarioModel
 from server.models.funcao_projeto_model import FuncaoProjeto
 
 from server.models.relacao_projeto_entidade import RelacaoProjetoEntidadeModel
@@ -16,13 +17,13 @@ from server.configuration.environment import Environment
 from sqlalchemy.orm import selectinload
 from sqlalchemy import and_
 
-class ProjetosRepository:
+class HistoricoProjetosRepository:
 
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
         self.environment = environment
 
-    async def find_projetos_by_ids(self, project_ids: List[int]) -> List[ProjetosModel]:
+    async def find_projetos_by_ids(self, project_ids: List[int]) -> List[HistoricoProjetoModel]:
         '''
         SELECT proj.*, ent_ext.*, tag.*, proj_user.*, func_proj.* 
         FROM tb_projetos proj 
@@ -36,19 +37,19 @@ class ProjetosRepository:
 
         '''
         stmt = (
-            select([ProjetosModel, EntidadeExternaModel, TagModel, FuncaoProjeto]).
+            select([HistoricoProjetoModel, HistoricoProjetoEntidadeModel, HistoricoProjetoTagModel, FuncaoProjeto]).
             join(
                 RelacaoProjetoEntidadeModel,
                 RelacaoProjetoTagModel,
                 RelacaoProjetoUsuarioModel,
                 and_(
-                    RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id,
-                    RelacaoProjetoTagModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoTagModel.id_tags == TagModel.id,
-                    RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id,
+                    RelacaoProjetoEntidadeModel.id_projetos == HistoricoProjetoModel.id,
+                    RelacaoProjetoEntidadeModel.id_entidade == HistoricoProjetoEntidadeModel.id,
+                    RelacaoProjetoTagModel.id_projetos == HistoricoProjetoModel.id,
+                    RelacaoProjetoTagModel.id_tags == HistoricoProjetoTagModel.id,
+                    RelacaoProjetoUsuarioModel.id_projetos == HistoricoProjetoModel.id,
                     RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjeto.id,
-                    ProjetosModel.id.in_(project_ids)
+                    HistoricoProjetoModel.id.in_(project_ids)
                 )
             ).options(
                 selectinload(Permissao.vinculos_permissao_funcao)
@@ -59,7 +60,7 @@ class ProjetosRepository:
 
 
 
-    async def get_all_projetos(self) -> List[ProjetosModel]:
+    async def get_all_projetos(self) -> List[HistoricoProjetoModel]:
         '''
         SELECT proj.*, ent_ext.*, tag.*, proj_user.*, func_proj.* 
         FROM tb_projetos proj 
@@ -72,17 +73,17 @@ class ProjetosRepository:
 
         '''
         stmt = (
-            select([ProjetosModel, EntidadeExternaModel, TagModel, FuncaoProjeto]).
+            select([HistoricoProjetoModel, HistoricoProjetoEntidadeModel, HistoricoProjetoTagModel, FuncaoProjeto]).
             join(
                 RelacaoProjetoEntidadeModel,
                 RelacaoProjetoTagModel,
                 RelacaoProjetoUsuarioModel,
                 and_(
-                    RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id,
-                    RelacaoProjetoTagModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoTagModel.id_tags == TagModel.id,
-                    RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id,
+                    RelacaoProjetoEntidadeModel.id_projetos == HistoricoProjetoModel.id,
+                    RelacaoProjetoEntidadeModel.id_entidade == HistoricoProjetoEntidadeModel.id,
+                    RelacaoProjetoTagModel.id_projetos == HistoricoProjetoModel.id,
+                    RelacaoProjetoTagModel.id_tags == HistoricoProjetoTagModel.id,
+                    RelacaoProjetoUsuarioModel.id_projetos == HistoricoProjetoModel.id,
                     RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjeto.id,
                 )
             ).options(
