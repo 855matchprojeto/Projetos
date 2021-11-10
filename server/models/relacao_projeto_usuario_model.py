@@ -14,9 +14,12 @@ class RelacaoProjetoUsuarioModel(db.Base, AuthenticatorBase):
     def __init__(self, **kwargs):
         super(RelacaoProjetoUsuarioModel, self).__init__(**kwargs)
 
-    __tablename__ = "tb_rel_projeto_user"
+    __tablename__ = "tb_rel_projeto_usuario"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
     id_funcao = Column(BigInteger, ForeignKey("tb_funcao_projeto.id"))
     guid_user = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
+
+    projeto = relationship("ProjetosModel", back_populates="rel_projeto_usuario")
+    funcao = relationship("EntidadeExternaModel", back_populates="rel_projeto_usuario")

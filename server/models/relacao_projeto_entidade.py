@@ -19,3 +19,6 @@ class RelacaoProjetoEntidadeModel(db.Base, AuthenticatorBase):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
     id_entidade = Column(BigInteger, ForeignKey("tb_entidade_externa.id"))
+
+    projeto = relationship("ProjetosModel", back_populates="rel_projeto_entidade")
+    entidade = relationship("EntidadeExternaModel", back_populates="rel_projeto_entidade")

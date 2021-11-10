@@ -36,23 +36,47 @@ class ProjetosRepository:
 
         '''
         stmt = (
-            select([ProjetosModel, EntidadeExternaModel, TagModel, FuncaoProjeto]).
-            join(
+            select(ProjetosModel)
+            .distinct()
+            .outerjoin(
                 RelacaoProjetoEntidadeModel,
-                RelacaoProjetoTagModel,
-                RelacaoProjetoUsuarioModel,
-                and_(
-                    RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id,
-                    RelacaoProjetoTagModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoTagModel.id_tags == TagModel.id,
-                    RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id,
-                    RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjeto.id,
-                    ProjetosModel.id.in_(project_ids)
-                )
-            ).options(
-                selectinload(Permissao.vinculos_permissao_funcao)
+                RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id
             )
+            .outerjoin(
+                EntidadeExternaModel,
+                RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoTagModel,
+                RelacaoProjetoTagModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                TagModel,
+                RelacaoProjetoTagModel.id_tags == TagModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoUsuarioModel,
+                RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                FuncaoProjeto,
+                RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjeto.id
+            )
+            .options(
+                (
+                    selectinload(ProjetosModel.relacao_projeto_entidade).
+                    selectinload(RelacaoProjetoEntidadeModel.projeto)
+                ),
+                (
+                    selectinload(ProjetosModel.relacao_projeto_tag).
+                    selectinload(RelacaoProjetoTagModel.projeto)
+                ),
+                (
+                    selectinload(ProjetosModel.relacao_projeto_usuario).
+                    selectinload(RelacaoProjetoUsuarioModel.projeto)
+                )
+            )
+
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
