@@ -20,7 +20,7 @@ class ProjetosService():
                     ProjetosModel.id == id,
                     ProjetosModel.guid == guid
                 )]
-        return await self.proj_repo.find_projetos_by_filtros(filtros=filtros)
+        return await self.proj_repo.find_projetos_by_ids() # filtros=filtros
 
     async def create(self, projeto_input):
         novo_projeto_dict = projeto_input.convert_to_dict()

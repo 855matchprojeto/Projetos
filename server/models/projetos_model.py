@@ -19,3 +19,18 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     titulo = Column(String(), nullable=False)
     descricao = Column(String())
+
+    rel_projeto_entidade = relationship(
+        "RelacaoProjetoEntidadeModel",
+        back_populates="projeto"
+    )
+
+    rel_projeto_tag = relationship(
+        "RelacaoProjetoTagModel",
+        back_populates="projeto"
+    )
+
+    rel_projeto_usuario = relationship(
+        "RelacaoProjetoUsuarioModel",
+        back_populates="projeto"
+    )

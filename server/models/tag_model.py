@@ -22,3 +22,8 @@ class TagModel(db.Base, AuthenticatorBase):
     nome_de_referencia = Column(String(), nullable=False)
     id_tipo_de_tag = Column(BigInteger, ForeignKey("tb_tipo_de_tag.id"))
     descricao = Column(String(), nullable=False)
+
+    rel_projeto_tag = relationship(
+        "RelacaoProjetoEntidadeModel",
+        back_populates="tag"
+    )
