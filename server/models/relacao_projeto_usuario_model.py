@@ -22,4 +22,4 @@ class RelacaoProjetoUsuarioModel(db.Base, AuthenticatorBase):
     guid_user = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
 
     projeto = relationship("ProjetosModel", back_populates="rel_projeto_usuario")
-    funcao = relationship("EntidadeExternaModel", back_populates="rel_projeto_usuario")
+    funcao = relationship("ProjetosModel", back_populates="rel_projeto_usuario")

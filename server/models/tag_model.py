@@ -24,6 +24,6 @@ class TagModel(db.Base, AuthenticatorBase):
     descricao = Column(String(), nullable=False)
 
     rel_projeto_tag = relationship(
-        "RelacaoProjetoEntidadeModel",
+        "RelacaoProjetoTagModel",
         back_populates="tag"
     )

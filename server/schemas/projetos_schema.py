@@ -4,6 +4,9 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID as GUID
 
+from server.schemas.entidade_externa_schema import EntidadeExternaOutput
+from server.schemas.tag_schema import TagOutput
+
 
 class ProjetosInput(AuthenticatorModelInput):
     titulo: str = Field(example='Projeto Exemplo')
@@ -22,6 +25,9 @@ class ProjetosOutput(AuthenticatorModelOutput):
     titulo: str = Field(example='Projeto Exemplo')
     guid: Optional[GUID] = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
     descricao: str = Field(example='Isso é um projeto')
+    entidades: List[EntidadeExternaOutput] = Field(example=[])
+    tags: List[TagOutput] = Field(example=[])
+    # usuarios: List[UsuarioOutput] = Field(example=[])
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
 
