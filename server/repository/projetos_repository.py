@@ -65,17 +65,6 @@ class ProjetoRepository:
         return query.scalars().all()
 
     async def find_projetos_by_ids(self) -> List[ProjetosModel]: #  project_ids: List[int]
-        """
-        SELECT proj.*, ent_ext.*, tag.*, proj_user.*, func_proj.*
-        FROM tb_projetos proj
-        INNER JOIN tb_rel_projeto_entidade proj_ent ON proj.id = proj_ent.id_projetos
-        INNER JOIN tb_entidade_externa ent_ext ON proj_ent.id_entidade = ent_ext.id
-        INNER JOIN tb_relacao_projeto_tag proj_tag ON proj.id = proj_tag.id_projetos
-        INNER JOIN tb_tag tag ON proj_tag.id_tag = tb_tag.id
-        INNER JOIN tb_rel_projeto_user proj_user ON proj.id = proj_user.id_projetos
-        INNER JOIN tb_funcao_projeto func_proj ON proj_user.id_funcao = func_proj.id
-        WHERE proj.id in :project_ids
-        """
         stmt = (
             select(ProjetosModel)
             .distinct()
@@ -106,16 +95,16 @@ class ProjetoRepository:
             .options(
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
-                    selectinload(RelacaoProjetoEntidadeModel.projeto)
-                ),
+                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+            ),
                 (
                     selectinload(ProjetosModel.rel_projeto_tag).
-                    selectinload(RelacaoProjetoTagModel.projeto)
-                ),
+                    selectinload(RelacaoProjetoTagModel.tag)
+            ),
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
-                    selectinload(RelacaoProjetoUsuarioModel.projeto)
-                )
+                    selectinload(RelacaoProjetoUsuarioModel.funcao)
+            )
             )
 
         )
