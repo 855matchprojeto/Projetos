@@ -25,17 +25,17 @@ class HistoricoProjetoModel(db.Base, AuthenticatorBase):
     descricao = Column(String(), unique=True)
     data = Column(DateTime, default=datetime.now)
 
-    rel_projeto_entidade = relationship(
-        "RelacaoProjetoEntidadeModel",
+    rel_historico_entidade = relationship(
+        "HistoricoProjetoEntidadeModel",
         back_populates="historico_projeto"
     )
 
-    rel_projeto_tag = relationship(
+    rel_historico_tag = relationship(
         "RelacaoProjetoTagModel",
         back_populates="historico_projeto"
     )
 
-    rel_projeto_usuario = relationship(
+    rel_historico_usuario = relationship(
         "RelacaoProjetoUsuarioModel",
         back_populates="historico_projeto"
     )

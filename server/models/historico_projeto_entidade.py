@@ -23,3 +23,6 @@ class HistoricoProjetoEntidadeModel(db.Base, AuthenticatorBase):
     id_entidade = Column(BigInteger, ForeignKey("tb_entidade_externa.id"))
     data = Column(DateTime, default=datetime.now)
     mudanca = Column(String(), nullable=False)
+
+    entidade_externa = relationship("EntidadeExternaModel", back_populates="historico_projeto_entidade")
+    historico = relationship("HistoricoProjetoModel", back_populates="historico_projeto_entidade")

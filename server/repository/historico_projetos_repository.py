@@ -56,12 +56,12 @@ class HistoricoProjetoRepository:
             select(HistoricoProjetoModel)
             .distinct()
             .outerjoin(
-                RelacaoProjetoEntidadeModel,
-                RelacaoProjetoEntidadeModel.id_projetos == HistoricoProjetoModel.id
+                HistoricoProjetoEntidadeModel,
+                HistoricoProjetoEntidadeModel.id_projetos == HistoricoProjetoModel.id
             )
             .outerjoin(
                 EntidadeExternaModel,
-                RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
+                HistoricoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
             )
             .outerjoin(
                 RelacaoProjetoTagModel,
@@ -81,15 +81,15 @@ class HistoricoProjetoRepository:
             )
             .options(
                 (
-                    selectinload(HistoricoProjetoModel.rel_projeto_entidade).
-                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+                    selectinload(HistoricoProjetoModel.rel_historico_entidade).
+                    selectinload(HistoricoProjetoEntidadeModel.entidade_externa)
             ),
                 (
-                    selectinload(HistoricoProjetoModel.rel_projeto_tag).
+                    selectinload(HistoricoProjetoModel.rel_historico_tag).
                     selectinload(RelacaoProjetoTagModel.tag)
             ),
                 (
-                    selectinload(HistoricoProjetoModel.rel_projeto_usuario).
+                    selectinload(HistoricoProjetoModel.rel_historico_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
             )
             )
