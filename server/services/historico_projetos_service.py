@@ -25,8 +25,8 @@ class HistoricoProjetosService():
 
         projects_history = await self.proj_repo.find_projetos_by_ids()  # filtros=filtros
         for project_history in projects_history:
-            entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project_history.rel_projeto_entidade]
-            tags = [rel_projeto_tag.tag for rel_projeto_tag in project_history.rel_projeto_tag]
+            entidades = [historico_projeto_entidade.entidade_externa for historico_projeto_entidade in project_history.historico_projeto_entidade]
+            tags = [historico_projeto_tag.tag for historico_projeto_tag in project_history.historico_projeto_tag]
             project_history.entidades = entidades
             project_history.tags = tags
 

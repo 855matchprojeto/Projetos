@@ -27,3 +27,8 @@ class TagModel(db.Base, AuthenticatorBase):
         "RelacaoProjetoTagModel",
         back_populates="tag"
     )
+
+    historico_projeto_tag = relationship(
+        "HistoricoProjetoTagModel",
+        back_populates="tag"
+    )

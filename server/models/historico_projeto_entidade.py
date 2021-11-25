@@ -19,10 +19,10 @@ class HistoricoProjetoEntidadeModel(db.Base, AuthenticatorBase):
     __tablename__ = "tb_historico_projeto_entidade"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
+    id_historico = Column(BigInteger, ForeignKey("tb_historico_projeto.id"))
     id_entidade = Column(BigInteger, ForeignKey("tb_entidade_externa.id"))
     data = Column(DateTime, default=datetime.now)
     mudanca = Column(String(), nullable=False)
 
+    historico_projeto = relationship("HistoricoProjetoModel", back_populates="historico_projeto_entidade")
     entidade_externa = relationship("EntidadeExternaModel", back_populates="historico_projeto_entidade")
-    historico = relationship("HistoricoProjetoModel", back_populates="historico_projeto_entidade")

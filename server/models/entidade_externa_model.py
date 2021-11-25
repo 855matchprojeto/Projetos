@@ -25,7 +25,7 @@ class EntidadeExternaModel(db.Base, AuthenticatorBase):
         back_populates="entidade_externa"
     )
 
-    rel_historico_entidade = relationship(
+    historico_projeto_entidade = relationship(
         "HistoricoProjetoEntidadeModel",
         back_populates="entidade_externa"
     )
