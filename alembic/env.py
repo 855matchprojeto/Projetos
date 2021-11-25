@@ -30,7 +30,19 @@ fileConfig(config.config_file_name)
 
 from server.models import (
     permissao_model,
-    vinculo_permissao_funcao_model
+    vinculo_permissao_funcao_model,
+    projetos_model,
+    funcao_projeto_model,
+    tag_model,
+    tipo_tag_model,
+    entidade_externa_model,
+    historico_projeto_entidade,
+    historico_projeto_tag,
+    historico_projetos_model,
+    historico_projetos_usuarios_model,
+    relacao_projeto_entidade,
+    relacao_projeto_tag,
+    relacao_projeto_usuario_model
 )
 
 
