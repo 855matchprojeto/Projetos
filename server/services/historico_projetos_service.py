@@ -8,9 +8,9 @@ from server.repository.historico_projetos_repository import HistoricoProjetoRepo
 
 class HistoricoProjetosService():
 
-    def __init__(self, proj_repo: Optional[HistoricoProjetoRepository] = None,
+    def __init__(self, hist_repo: Optional[HistoricoProjetoRepository] = None,
                  environment: Optional[Environment] = None):
-        self.proj_repo = proj_repo
+        self.hist_repo = hist_repo
         self.environment = environment
 
     async def get(self, id=None, guid=None):
@@ -23,7 +23,7 @@ class HistoricoProjetosService():
                     HistoricoProjetoModel.guid == guid
                 )]
 
-        projects_history = await self.proj_repo.find_projetos_by_ids()  # filtros=filtros
+        projects_history = await self.hist_repo.find_projetos_by_ids()  # filtros=filtros
         for project_history in projects_history:
             entidades = [historico_projeto_entidade.entidade_externa for historico_projeto_entidade in project_history.historico_projeto_entidade]
             tags = [historico_projeto_tag.tag for historico_projeto_tag in project_history.historico_projeto_tag]
@@ -31,3 +31,9 @@ class HistoricoProjetosService():
             project_history.tags = tags
 
         return projects_history
+
+    async def create(self, projeto_input):
+        teste = await self.hist_repo.insere_projeto(projeto_input.convert_to_dict())
+
+        return teste
+
