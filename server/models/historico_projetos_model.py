@@ -24,3 +24,18 @@ class HistoricoProjetoModel(db.Base, AuthenticatorBase):
     titulo = Column(String(), nullable=False, unique=True)
     descricao = Column(String(), unique=True)
     data = Column(DateTime, default=datetime.now)
+
+    historico_projeto_entidade = relationship(
+        "HistoricoProjetoEntidadeModel",
+        back_populates="historico_projeto"
+    )
+
+    historico_projeto_tag = relationship(
+        "HistoricoProjetoTagModel",
+        back_populates="historico_projeto"
+    )
+
+    # historico_projeto_usuario = relationship(
+    #     "HistoricoProjetoUsuarioModel",
+    #     back_populates="historico_projeto"
+    # )
