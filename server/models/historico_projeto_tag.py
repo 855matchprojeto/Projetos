@@ -17,7 +17,10 @@ class HistoricoProjetoTagModel(db.Base, AuthenticatorBase):
     __tablename__ = "tb_historico_projeto_tag"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
+    id_historico = Column(BigInteger, ForeignKey("tb_historico_projeto.id"))
     id_tags = Column(BigInteger, ForeignKey("tb_tag.id"))
     data = Column(DateTime, default=datetime.now)
     mudanca = Column(String(), nullable=False)
+
+    historico_projeto = relationship("HistoricoProjetoModel", back_populates="historico_projeto_tag")
+    tag = relationship("TagModel", back_populates="historico_projeto_tag")

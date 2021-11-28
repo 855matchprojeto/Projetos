@@ -24,4 +24,3 @@ class VinculoPermissaoFuncao(db.Base, AuthenticatorBase):
     id_funcao = Column(BigInteger, nullable=False)
 
     permissao = relationship('Permissao', back_populates='vinculos_permissao_funcao')
-

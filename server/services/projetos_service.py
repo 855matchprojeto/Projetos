@@ -20,7 +20,15 @@ class ProjetosService():
                     ProjetosModel.id == id,
                     ProjetosModel.guid == guid
                 )]
-        return await self.proj_repo.find_projetos_by_filtros(filtros=filtros)
+
+        projects = await self.proj_repo.find_projetos_by_ids() # filtros=filtros
+        for project in projects:
+            entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
+            tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
+            project.entidades = entidades
+            project.tags = tags
+
+        return projects
 
     async def create(self, projeto_input):
         novo_projeto_dict = projeto_input.convert_to_dict()

@@ -19,3 +19,6 @@ class RelacaoProjetoTagModel(db.Base, AuthenticatorBase):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     id_projetos = Column(BigInteger, ForeignKey("tb_projetos.id"))
     id_tags = Column(BigInteger, ForeignKey("tb_tag.id"))
+
+    projeto = relationship("ProjetosModel", back_populates="rel_projeto_tag")
+    tag = relationship("TagModel", back_populates="rel_projeto_tag")
