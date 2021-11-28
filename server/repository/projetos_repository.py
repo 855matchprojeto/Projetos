@@ -97,17 +97,20 @@ class ProjetoRepository:
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
                     selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
-                ),
+            ),
                 (
                     selectinload(ProjetosModel.rel_projeto_tag).
                     selectinload(RelacaoProjetoTagModel.tag)
-                ),
+            ),
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
-                )
             )
+            )
+
         )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().all()
 
     async def insere_interesse_usuario_projeto(self, guid_usuario: str, id_projeto: int) -> InteresseUsuarioProjeto:
         stmt = (
