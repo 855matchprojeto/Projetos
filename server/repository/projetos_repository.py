@@ -1,10 +1,16 @@
 from server.configuration.db import AsyncSession
 from server.configuration.exceptions import ProjectNotFoundException
+from server.models.entidade_externa_model import EntidadeExternaModel
+from server.models.funcao_projeto_model import FuncaoProjetoModel
 from server.models.projetos_model import ProjetosModel
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, insert, literal_column, delete, update
 from typing import List, Optional
 from server.configuration.environment import Environment
+from server.models.relacao_projeto_entidade import RelacaoProjetoEntidadeModel
+from server.models.relacao_projeto_tag import RelacaoProjetoTagModel
+from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
+from server.models.tag_model import TagModel
 
 
 class ProjetoRepository:
@@ -56,3 +62,53 @@ class ProjetoRepository:
                 where(*filtros)
         )
         query = await self.db_session.execute(stmt)
+        return query.scalars().all()
+
+    async def find_projetos_by_ids(self) -> List[ProjetosModel]: #  project_ids: List[int]
+        stmt = (
+            select(ProjetosModel)
+            .distinct()
+            .outerjoin(
+                RelacaoProjetoEntidadeModel,
+                RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                EntidadeExternaModel,
+                RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoTagModel,
+                RelacaoProjetoTagModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                TagModel,
+                RelacaoProjetoTagModel.id_tags == TagModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoUsuarioModel,
+                RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                FuncaoProjetoModel,
+                RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
+            )
+            .options(
+                (
+                    selectinload(ProjetosModel.rel_projeto_entidade).
+                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_tag).
+                    selectinload(RelacaoProjetoTagModel.tag)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_usuario).
+                    selectinload(RelacaoProjetoUsuarioModel.funcao)
+            )
+            )
+
+        )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().all()
+
+

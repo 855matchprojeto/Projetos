@@ -19,3 +19,8 @@ class FuncaoProjetoModel(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     nome = Column(String(), nullable=False)
     descricao = Column(String())
+
+    # historico_projeto_usuario = relationship(
+    #     "HistoricoProjetoUsuarioModel",
+    #     back_populates="usuario"
+    # )

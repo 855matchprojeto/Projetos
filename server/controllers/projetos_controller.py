@@ -3,6 +3,9 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
+
+from server.repository.historico_projetos_repository import HistoricoProjetoRepository
+from server.services.historico_projetos_service import HistoricoProjetosService
 from server.services.projetos_service import ProjetosService
 from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput
 from server.dependencies.get_current_user import get_current_user
@@ -48,6 +51,13 @@ class ProjetosController:
             ProjetoRepository(session, environment),
             environment
         )
+
+        hist_service = HistoricoProjetosService(
+            HistoricoProjetoRepository(session, environment),
+            environment
+        )
+
+        await hist_service.create(data)
         return await service.create(data)
 
 

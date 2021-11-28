@@ -1,12 +1,21 @@
 from server.configuration.db import AsyncSession
+from server.models.entidade_externa_model import EntidadeExternaModel
+from server.models.funcao_projeto_model import FuncaoProjetoModel
+from server.models.historico_projeto_entidade import HistoricoProjetoEntidadeModel
+from server.models.historico_projeto_tag import HistoricoProjetoTagModel
 from server.models.historico_projetos_model import HistoricoProjetoModel
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, insert, literal_column, delete
 from typing import List, Optional
 from server.configuration.environment import Environment
+from server.models.historico_projetos_usuarios_model import HistoricoProjetoUsuarioModel
+from server.models.relacao_projeto_entidade import RelacaoProjetoEntidadeModel
+from server.models.relacao_projeto_tag import RelacaoProjetoTagModel
+from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
+from server.models.tag_model import TagModel
 
 
-class ProjetoRepository:
+class HistoricoProjetoRepository:
 
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
@@ -43,3 +52,52 @@ class ProjetoRepository:
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
+
+    async def find_projetos_by_ids(self) -> List[HistoricoProjetoModel]: #  project_ids: List[int]
+        stmt = (
+            select(HistoricoProjetoModel)
+            .distinct()
+            .outerjoin(
+                HistoricoProjetoEntidadeModel,
+                HistoricoProjetoEntidadeModel.id_historico == HistoricoProjetoModel.id
+            )
+            .outerjoin(
+                EntidadeExternaModel,
+                HistoricoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
+            )
+            .outerjoin(
+                HistoricoProjetoTagModel,
+                HistoricoProjetoTagModel.id_historico == HistoricoProjetoModel.id
+            )
+            .outerjoin(
+                TagModel,
+                HistoricoProjetoTagModel.id_tags == TagModel.id
+            )
+            # .outerjoin(
+            #     HistoricoProjetoUsuarioModel,
+            #     HistoricoProjetoUsuarioModel.id_historico == HistoricoProjetoModel.id
+            # )
+            # .outerjoin(
+            #     FuncaoProjetoModel,
+            #     HistoricoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
+            # )
+            .options(
+                (
+                    selectinload(HistoricoProjetoModel.historico_projeto_entidade).
+                    selectinload(HistoricoProjetoEntidadeModel.entidade_externa)
+            ),
+                (
+                    selectinload(HistoricoProjetoModel.historico_projeto_tag).
+                    selectinload(HistoricoProjetoTagModel.tag)
+            ),
+            #     (
+            #         selectinload(HistoricoProjetoModel.rel_historico_usuario).
+            #         selectinload(HistoricoProjetoUsuarioModel.funcao)
+            # )
+            )
+
+        )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().all()
+
+
