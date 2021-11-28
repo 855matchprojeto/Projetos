@@ -11,6 +11,7 @@ from server.models.relacao_projeto_entidade import RelacaoProjetoEntidadeModel
 from server.models.relacao_projeto_tag import RelacaoProjetoTagModel
 from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
 from server.models.tag_model import TagModel
+from server.models.interesse_usuario_projeto_model import InteresseUsuarioProjeto
 
 
 class ProjetoRepository:
@@ -96,19 +97,50 @@ class ProjetoRepository:
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
                     selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
-            ),
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_tag).
                     selectinload(RelacaoProjetoTagModel.tag)
-            ),
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
+                )
             )
-            )
+        )
 
+    async def insere_interesse_usuario_projeto(self, guid_usuario: str, id_projeto: int) -> InteresseUsuarioProjeto:
+        stmt = (
+            insert(InteresseUsuarioProjeto).
+            returning(literal_column('*')).
+            values(
+                id_projeto=id_projeto,
+                guid_usuario=guid_usuario
+            )
+        )
+        query = await self.db_session.execute(stmt)
+        row_to_dict = dict(query.fetchone())
+        return InteresseUsuarioProjeto(**row_to_dict)
+
+    async def delete_interesse_usuario_projeto_by_filtros(self, filtros) -> None:
+        stmt = (
+            delete(InteresseUsuarioProjeto).
+            where(*filtros)
+        )
+        await self.db_session.execute(stmt)
+
+    async def get_projetos_interesse_usuario(self, guid_usuario: str):
+        """
+            Captura os projetos que o usuário marcou como interesse
+        """
+        stmt = (
+            select(ProjetosModel).
+            join(
+                InteresseUsuarioProjeto,
+                InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
+            ).
+            where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
-
 
