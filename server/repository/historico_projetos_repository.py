@@ -22,6 +22,14 @@ class HistoricoProjetoRepository:
         self.environment = environment
 
     async def insere_projeto(self, projeto_dict: dict) -> HistoricoProjetoModel:
+        """
+        Método que faz a query para inserir um projeto no banco de dados de histórico
+        Args:
+            projeto_dict: dicionário contendo os atributos do projeto
+
+        Returns:
+            Projeto criado no histórico
+        """
         stmt = (
             insert(HistoricoProjetoModel).
             returning(literal_column('*')).
@@ -32,12 +40,28 @@ class HistoricoProjetoRepository:
         return HistoricoProjetoModel(**row_to_dict)
 
     async def atualiza_projeto(self, projeto_dict: dict) -> HistoricoProjetoModel:
+        """
+        Método que faz a query para atualizar um histórico de projeto no banco de dados
+        Args:
+            projeto_dict: dicionário contendo os atributos do histórico de projeto
+
+        Returns:
+            Histórico de projeto atualizado
+        """
         new_user_entity = HistoricoProjetoModel(**projeto_dict)
         self.db_session.add(new_user_entity)
         await self.db_session.flush()
         return new_user_entity
 
     async def find_projetos_by_filtros(self, filtros: List) -> List[HistoricoProjetoModel]:
+        """
+        Método que faz a query para pegar histórico de projetos por filtros no banco de dados
+        Args:
+            filtros: lista de ids de histórico de projetos
+
+        Returns:
+            Lista com históricos de projetos
+        """
         stmt = (
             select(HistoricoProjetoModel).
             where(*filtros)
@@ -46,6 +70,14 @@ class HistoricoProjetoRepository:
         return query.scalars().all()
 
     async def delete_projetos_by_filtros(self, filtros: List):
+        """
+        Método que faz a query para deletar histórico projetos por filtros no banco de dados
+        Args:
+            filtros: lista de ids de histórico de projetos
+
+        Returns:
+            Nada
+        """
         stmt = (
             delete(HistoricoProjetoModel).
             where(*filtros)
@@ -54,6 +86,15 @@ class HistoricoProjetoRepository:
         return query.scalars().all()
 
     async def find_projetos_by_ids(self) -> List[HistoricoProjetoModel]: #  project_ids: List[int]
+        """
+        Método que faz a query para pegar histórico de projetos por ids no banco de dados
+        Esse método traz todas as informações associadas com o projeto
+        Args:
+            filtros: lista de ids de histórico de projetos
+
+        Returns:
+            Lista com histórico de projetos
+        """
         stmt = (
             select(HistoricoProjetoModel)
             .distinct()

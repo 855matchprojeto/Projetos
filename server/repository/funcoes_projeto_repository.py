@@ -14,6 +14,14 @@ class FuncoesProjetoRepository:
         self.environment = environment
 
     async def insere_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
+        """
+        Método que faz a query para inserir uma função no banco de dados
+        Args:
+            funcao_dict: dicionário contendo os atributos da função
+
+        Returns:
+            Função criada
+        """
         stmt = (
             insert(FuncaoProjetoModel).
             returning(literal_column('*')).
@@ -24,12 +32,28 @@ class FuncoesProjetoRepository:
         return FuncaoProjetoModel(**row_to_dict)
 
     async def atualiza_funcao(self, funcao_dict: dict) -> FuncaoProjetoModel:
+        """
+        Método que faz a query para atualizar uma função no banco de dados
+        Args:
+            funcao_dict: dicionário contendo os atributos da função
+
+        Returns:
+            Função atualizada
+        """
         new_user_entity = FuncaoProjetoModel(**funcao_dict)
         self.db_session.add(new_user_entity)
         await self.db_session.flush()
         return new_user_entity
 
     async def find_funcoes_by_filtros(self, filtros: List) -> List[FuncaoProjetoModel]:
+        """
+        Método que faz a query para pegar funções por filtros no banco de dados
+        Args:
+            filtros: lista de ids de funções
+
+        Returns:
+            Lista com funções
+        """
         stmt = (
             select(FuncaoProjetoModel).
             where(*filtros)
@@ -38,6 +62,14 @@ class FuncoesProjetoRepository:
         return query.scalars().all()
 
     async def delete_funcoes_by_filtros(self, filtros: List):
+        """
+        Método que faz a query para deletar funções por filtros no banco de dados
+        Args:
+            filtros: lista de ids de funções
+
+        Returns:
+            Nada
+        """
         stmt = (
             delete(FuncaoProjetoModel).
             where(*filtros)
@@ -45,6 +77,15 @@ class FuncoesProjetoRepository:
         query = await self.db_session.execute(stmt)
 
     async def update_funcao_by_guid(self, guid, projeto_update_dict: dict) -> FuncaoProjetoModel:
+        """
+        Método que faz a query para atualizar uma função pelo guid no banco de dados
+        Args:
+            guid: guid da função
+            projeto_update_dict: dicionário contendo os atributos da função
+
+        Returns:
+            função atualizada
+        """
         stmt = (
             update(FuncaoProjetoModel).
             returning(literal_column('*')).

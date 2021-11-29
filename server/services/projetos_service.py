@@ -22,6 +22,15 @@ class ProjetosService:
         self.environment = environment
 
     async def get(self, id=None, guid=None):
+        """
+        Método que faz a lógica de pegar os projetos
+        Args:
+            id: id do projeto
+            guid: guid do projeto
+
+        Returns:
+            Lista com os projetos
+        """
         if id == None and guid == None:
             filtros = []
         else:
@@ -40,8 +49,15 @@ class ProjetosService:
 
         return projects
 
-    async def create(self, projeto_input, guid_usuario: str):
-        # Tratando o input de projeto
+    async def create(self, projeto_input):
+        """
+        Método que faz a lógica de criar um projeto
+        Args:
+            projeto_input: projeto a ser criado
+
+        Returns:
+            Projeto criado
+        """
         novo_projeto_dict = projeto_input.convert_to_dict()
         # Insere no banco de dados e retorna o projeto
         projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
@@ -64,16 +80,41 @@ class ProjetosService:
         )
 
     async def update(self, projeto_input):
+        """
+        Método que faz a lógica de atualizar um projeto
+        Args:
+            projeto_input: projeto a ser atualizado
+
+        Returns:
+            Projeto atualizado
+        """
         novo_projeto_dict = projeto_input.convert_to_dict()
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.atualiza_projeto(novo_projeto_dict)
 
     async def update_by_guid(self, guid, projeto_input):
+        """
+        Método que faz a lógica de atualizar um projeto pelo guid
+        Args:
+            guid: guid do projeto
+            projeto_input: projeto a ser atualizado
+
+        Returns:
+            Projeto atualizado
+        """
         novo_projeto_dict = projeto_input.convert_to_dict()
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.update_projeto_by_guid(guid, novo_projeto_dict)
 
     async def delete(self, guid):
+        """
+        Método que faz a lógica de deletar um projeto pelo guid
+        Args:
+            guid: guid do projeto
+
+        Returns:
+            Nada
+        """
         return await self.proj_repo.delete_projetos_by_filtros(filtros=[ProjetosModel.guid == guid])
 
     async def insert_interesse_usuario_projeto(self, guid_usuario: str, guid_projeto: str):

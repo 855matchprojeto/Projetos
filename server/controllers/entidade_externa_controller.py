@@ -31,6 +31,18 @@ class TagController:
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
                            ):
+        """
+        Endpoint para pegar todas as entidades externas
+        Args:
+            id: (optional) id da entidade externa
+            guid: (optional) guid da entidade externa
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - lista com entidades externas
+        """
         service = EntidadeExternaService(
             EntidadeExternaRepository(session, environment),
             environment
@@ -43,6 +55,17 @@ class TagController:
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
                             current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para criar uma nova entidade externa
+        Args:
+            data: entidade externa a ser criada
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - entidade externa criada
+        """
         service = EntidadeExternaService(
             EntidadeExternaRepository(session, environment),
             environment
@@ -56,6 +79,18 @@ class TagController:
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para atualizar uma entidade externa pelo guid
+        Args:
+            guid: guid da entidade externa
+            data: entidade externa a ser modificada
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - entidade externa atualizada
+        """
         service = EntidadeExternaService(
             EntidadeExternaRepository(session, environment),
             environment
@@ -68,6 +103,17 @@ class TagController:
                               session: AsyncSession = Depends(get_session),
                               environment: Environment = Depends(get_environment_cached),
                               current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para deletar uma entidade externa
+        Args:
+            guid: guid da entidade externa
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 204 (no content)
+        """
         service = EntidadeExternaService(
             EntidadeExternaRepository(session, environment),
             environment
