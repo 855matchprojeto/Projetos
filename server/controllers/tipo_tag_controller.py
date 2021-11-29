@@ -31,6 +31,18 @@ class TagController:
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
                            ):
+        """
+        Endpoint para pegar todos os tipos de tags
+        Args:
+            id: (optional) id do tipo de tag
+            guid: (optional) guid do tipo de tag
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - lista com tipos de tags
+        """
         service = TipoTagService(
             TipoTagRepository(session, environment),
             environment
@@ -43,6 +55,17 @@ class TagController:
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
                             current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para criar um tipo de tag
+        Args:
+            data: tipo de tag a ser criado
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - tipo de tag criado
+        """
         service = TipoTagService(
             TipoTagRepository(session, environment),
             environment
@@ -56,6 +79,17 @@ class TagController:
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para atualizar um tipo de tag
+        Args:
+            data: tipo de tag a ser atualizado
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - tipo de tag atualizado
+        """
         service = TipoTagService(
             TipoTagRepository(session, environment),
             environment
@@ -68,6 +102,17 @@ class TagController:
                               session: AsyncSession = Depends(get_session),
                               environment: Environment = Depends(get_environment_cached),
                               current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para deletar um tipo de tag
+        Args:
+            guid: guid do projeto
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 204 (no content)
+        """
         service = TipoTagService(
             TipoTagRepository(session, environment),
             environment

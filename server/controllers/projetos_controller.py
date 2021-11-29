@@ -16,6 +16,7 @@ from server.dependencies.session import get_session
 from server.configuration.environment import Environment
 from server.dependencies.get_environment_cached import get_environment_cached
 from server.repository.projetos_repository import ProjetoRepository
+from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
 
 
 router = APIRouter()
@@ -35,6 +36,18 @@ class ProjetosController:
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
                            ):
+        """
+        Endpoint para pegar todos os projetos
+        Args:
+            id: (optional) id do histórico
+            guid: (optional) guid do histórico
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - lista com projetos
+        """
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment
@@ -47,19 +60,31 @@ class ProjetosController:
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
                             current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para criar um projeto
+        Args:
+            data: projeto a ser criado
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - projeto criado
+        """
         service = ProjetosService(
             ProjetoRepository(session, environment),
-            environment
+            environment,
+            FuncoesProjetoRepository(session, environment)
         )
-
+        # criando também o histórico
         hist_service = HistoricoProjetosService(
             HistoricoProjetoRepository(session, environment),
             environment
         )
 
+        guid_usuario = current_user.guid
         await hist_service.create(data)
-        return await service.create(data)
-
+        return await service.create(data, guid_usuario)
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
@@ -67,6 +92,17 @@ class ProjetosController:
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para atualizar um projeto
+        Args:
+            data: projeto a ser atualizado
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - projeto atualizado
+        """
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment
@@ -79,6 +115,17 @@ class ProjetosController:
                               session: AsyncSession = Depends(get_session),
                               environment: Environment = Depends(get_environment_cached),
                               current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para deletar um projeto
+        Args:
+            guid: guid do projeto
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 204 (no content)
+        """
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment

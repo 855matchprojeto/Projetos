@@ -14,6 +14,14 @@ class PermissaoRepository:
         self.environment = environment
 
     async def find_permissions_by_roles_list(self, roles: List[int]) -> List[Permissao]:
+        """
+        Dada uma função, encontra sua permissão
+        Args:
+            roles: lista de funções
+
+        Returns:
+            Permissão das funções
+        """
         stmt = (
             select(Permissao).
             join(

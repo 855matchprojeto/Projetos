@@ -14,6 +14,15 @@ class HistoricoProjetosService():
         self.environment = environment
 
     async def get(self, id=None, guid=None):
+        """
+        Método que faz a lógica de pegar os históricos do projeto
+        Args:
+            id: id do histórico
+            guid: guid do histórico
+
+        Returns:
+            Lista com os históricos
+        """
         if id is None and guid == None:
             filtros = []
         else:
@@ -33,6 +42,14 @@ class HistoricoProjetosService():
         return projects_history
 
     async def create(self, projeto_input):
+        """
+        Método que faz a lógica de criar um histórico
+        Args:
+            projeto_input: histórico a ser criado
+
+        Returns:
+            Histórico criado
+        """
         teste = await self.hist_repo.insere_projeto(projeto_input.convert_to_dict())
 
         return teste

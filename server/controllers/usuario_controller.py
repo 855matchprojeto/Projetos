@@ -15,7 +15,7 @@ from server.services.projetos_service import ProjetosService
 from server.repository.projetos_repository import ProjetoRepository
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
 from fastapi import APIRouter, Depends, Security, status, Response
-from server.schemas.projetos_schema import ProjetosOutput
+from server.schemas.projetos_schema import ProjetosOutput, SimpleProjetosOutput
 
 
 router = APIRouter()
@@ -73,7 +73,7 @@ async def get_current_user(
         "Projetos",
         "InteresseUsuarioProjeto"
     ],
-    response_model=List[ProjetosOutput],
+    response_model=List[SimpleProjetosOutput],
     summary='Retorna os projetos que o usuário marcou como de seu interesse',
     response_description='Retorna os projetos que o usuário marcou como de seu interesse',
     responses={
@@ -118,6 +118,58 @@ async def get_current_user_projects_interested(
 
     guid_curr_user = current_user.guid
     return await projetos_service.get_projetos_interesse_usuario(guid_curr_user)
+
+
+@router.get(
+    "/me/projects",
+    tags=[
+        "Projetos"
+    ],
+    response_model=List[SimpleProjetosOutput],
+    summary='Retorna os projetos em que o usuário pertence',
+    response_description='Retorna os projetos em que o usuário pertence',
+    responses={
+        401: {
+            'model': error_schema.ErrorOutput401,
+        },
+        422: {
+            'model': error_schema.ErrorOutput422,
+        },
+        500: {
+            'model': error_schema.ErrorOutput500
+        }
+    }
+)
+@endpoint_exception_handler
+async def get_current_user_projects(
+    current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+    session: AsyncSession = Depends(get_session),
+    environment: Environment = Depends(get_environment_cached),
+):
+
+    """
+        # Descrição
+
+        Retorna os projetos que o usuário pertence
+
+        # Erros
+
+        Segue a lista de erros, por (**error_id**, **status_code**), que podem ocorrer nesse endpoint:
+
+        - **(INVALID_OR_EXPIRED_TOKEN, 401)**: Token de acesso inválido ou expirado.
+        - **(REQUEST_VALIDATION_ERROR, 422)**: Validação padrão da requisição. O detalhamento é um JSON,
+        no formato de string, contendo os erros de validação encontrados.
+        - **(INTERNAL_SERVER_ERROR, 500)**: Erro interno no sistema
+
+    """
+
+    projetos_service = ProjetosService(
+        proj_repo=ProjetoRepository(session, environment),
+        environment=environment
+    )
+
+    guid_curr_user = current_user.guid
+    return await projetos_service.get_projetos_usuario(guid_curr_user)
 
 
 @router.post(

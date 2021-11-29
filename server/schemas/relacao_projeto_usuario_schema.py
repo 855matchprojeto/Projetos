@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 
-class HistoricoProjetosInput(AuthenticatorModelInput):
+class RelacaoProjetoUsuarioInput(AuthenticatorModelInput):
 
     id_projetos: int = Field(example="1")
     id_funcao: int = Field(example="1")
@@ -18,7 +18,7 @@ class HistoricoProjetosInput(AuthenticatorModelInput):
         arbitrary_types_allowed = True
 
 
-class HistoricoProjetosOutput(AuthenticatorModelOutput):
+class RelacaoProjetoUsuarioOutput(AuthenticatorModelOutput):
     id: int = Field(example="1")
     id_projetos: int = Field(example="1")
     id_funcao: int = Field(example="1")
