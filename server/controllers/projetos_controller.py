@@ -60,6 +60,26 @@ class ProjetosController:
         await hist_service.create(data)
         return await service.create(data)
 
+    @router.post(path="/projeto_completo", response_model=ProjetosOutput)
+    @endpoint_exception_handler
+    async def post_projeto_completo(self, data: ProjetosInput,
+                            session: AsyncSession = Depends(get_session),
+                            environment: Environment = Depends(get_environment_cached),
+                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        service = ProjetosService(
+            ProjetoRepository(session, environment),
+            environment
+        )
+
+        hist_service = HistoricoProjetosService(
+            HistoricoProjetoRepository(session, environment),
+            environment
+        )
+
+        await hist_service.create(data)
+        data = await service.create(data)
+        return data;
+
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
