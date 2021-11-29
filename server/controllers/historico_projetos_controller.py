@@ -28,7 +28,18 @@ class HistoricoProjetosController:
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para pegar todos os históricos
+        Args:
+            id: (optional) id do histórico
+            guid: (optional) guid do histórico
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
 
+        Returns:
+            código 200 (ok) - lista com históricos
+        """
         service = HistoricoProjetosService(
             HistoricoProjetoRepository(session, environment),
             environment
@@ -39,6 +50,15 @@ class HistoricoProjetosController:
     async def post_historico_projetos(self, data: List[HistoricoProjetosInput],
                                       current_user: usuario_schema.CurrentUserToken = Security(get_current_user,
                                                                                                scopes=[])):
+        """
+        Endpoint para criar um histórico
+        Args:
+            data: historico a ser criado
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - histórico criado
+        """
         service = HistoricoProjetosService()
         return await service.create(data)
 
@@ -46,6 +66,15 @@ class HistoricoProjetosController:
     async def put_historico_projetos(self, data: List[HistoricoProjetosInput],
                                      current_user: usuario_schema.CurrentUserToken = Security(get_current_user,
                                                                                               scopes=[])):
+        """
+        Endpoint para atualizar um histórico
+        Args:
+            data: historico a ser atualizado
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - histórico atualizado
+        """
         service = HistoricoProjetosService()
         return await service.update(data)
 
@@ -53,5 +82,14 @@ class HistoricoProjetosController:
     async def delete_historico_projetos(self, guid: str,
                                         current_user: usuario_schema.CurrentUserToken = Security(get_current_user,
                                                                                                  scopes=[])):
+        """
+        Endpoint para deletar um histórico
+        Args:
+            guid: guid do histórico
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 204 (no content)
+        """
         service = HistoricoProjetosService()
         return await service.delete(guid)

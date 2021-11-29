@@ -32,6 +32,18 @@ class FuncaoProjetosController:
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
                            ):
+        """
+        Endpoint para pegar todas as funções
+        Args:
+            id: (optional) id da função
+            guid: (optional) guid da função
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - lista com funções
+        """
         service = FuncoesProjetoService(
             FuncoesProjetoRepository(session, environment),
             environment
@@ -44,6 +56,17 @@ class FuncaoProjetosController:
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
                             current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para criar uma função
+        Args:
+            data: função a ser criada
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - função criada
+        """
         service = FuncoesProjetoService(
             FuncoesProjetoRepository(session, environment),
             environment
@@ -57,6 +80,17 @@ class FuncaoProjetosController:
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para atualizar uma função
+        Args:
+            data: função a ser criada
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - função atualizada
+        """
         service = FuncoesProjetoService(
             FuncoesProjetoRepository(session, environment),
             environment
@@ -69,6 +103,17 @@ class FuncaoProjetosController:
                               session: AsyncSession = Depends(get_session),
                               environment: Environment = Depends(get_environment_cached),
                               current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+        """
+        Endpoint para deletar uma função
+        Args:
+            guid: (optional) guid da função
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 204 (no content)
+        """
         service = FuncoesProjetoService(
             FuncoesProjetoRepository(session, environment),
             environment
