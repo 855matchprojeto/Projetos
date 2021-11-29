@@ -16,6 +16,7 @@ from server.dependencies.session import get_session
 from server.configuration.environment import Environment
 from server.dependencies.get_environment_cached import get_environment_cached
 from server.repository.projetos_repository import ProjetoRepository
+from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
 
 
 router = APIRouter()
@@ -72,7 +73,8 @@ class ProjetosController:
         """
         service = ProjetosService(
             ProjetoRepository(session, environment),
-            environment
+            environment,
+            FuncoesProjetoRepository(session, environment)
         )
         # criando também o histórico
         hist_service = HistoricoProjetosService(
@@ -80,9 +82,9 @@ class ProjetosController:
             environment
         )
 
+        guid_usuario = current_user.guid
         await hist_service.create(data)
-        return await service.create(data)
-
+        return await service.create(data, guid_usuario)
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
