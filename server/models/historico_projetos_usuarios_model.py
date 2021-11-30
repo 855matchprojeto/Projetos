@@ -10,7 +10,10 @@ from datetime import datetime
 
 
 class HistoricoProjetoUsuarioModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo do histórico do projeto usuário
+    possui relações com historico_projeto e usuario
+    """
     def __init__(self, **kwargs):
         super(HistoricoProjetoUsuarioModel, self).__init__(**kwargs)
 

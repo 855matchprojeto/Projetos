@@ -5,7 +5,10 @@ from sqlalchemy.orm import relationship
 
 
 class Permissao(db.Base, AuthenticatorBase):
-
+    """
+    Modelo de permissao
+    possui relação com função
+    """
     def __init__(self, **kwargs):
         super(Permissao, self).__init__(**kwargs)
 

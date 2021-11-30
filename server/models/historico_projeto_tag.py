@@ -10,7 +10,10 @@ from datetime import datetime
 
 
 class HistoricoProjetoTagModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo do histórico projeto tag
+    possui relações com historico_projeto e tag
+    """
     def __init__(self, **kwargs):
         super(HistoricoProjetoTagModel, self).__init__(**kwargs)
 

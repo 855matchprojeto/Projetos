@@ -5,6 +5,9 @@ from typing import List, Optional
 
 
 class EntidadeExternaInput(AuthenticatorModelInput):
+    """
+    Schema de input da entidade externa
+    """
     nome: str = Field(example='Tipo Tag Exemplo')
 
     def convert_to_dict(self):
@@ -16,6 +19,11 @@ class EntidadeExternaInput(AuthenticatorModelInput):
 
 
 class EntidadeExternaOutput(AuthenticatorModelOutput):
+    """
+    Schema de output da entidade externa
+
+    retorna também id e guid criados
+    """
     id: int = Field(example="1")
     nome: str = Field(example='Tipo Entidade Externa Exemplo')
     guid: GUID = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')

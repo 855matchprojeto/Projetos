@@ -3,7 +3,9 @@ from typing import List, Optional
 
 
 class CurrentUserToken(BaseModel):
-
+    """
+    Schema do token de usuário
+    """
     name: str
     username: str
     guid: str
@@ -13,9 +15,10 @@ class CurrentUserToken(BaseModel):
 
 
 class CurrentUserOutput(BaseModel):
-
+    """
+    Schema de output to token de usuário
+    """
     name: str = Field(example='Teste')
     username: str = Field(example='username')
     guid: str = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
     email: EmailStr = Field(example="teste@unicamp.br")
-

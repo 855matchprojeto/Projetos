@@ -6,6 +6,9 @@ from typing import List, Optional
 
 
 class TagInput(AuthenticatorModelInput):
+    """
+    Schema de input do tipo de tag
+    """
     nome: str = Field(example='Tag Exemplo')
     nome_de_referencia: str = Field(example='Nome de referência Tag Exemplo')
     descricao: str = Field(example='Descrição da tag')
@@ -20,6 +23,11 @@ class TagInput(AuthenticatorModelInput):
 
 
 class TagOutput(AuthenticatorModelOutput):
+    """
+    Schema de output do tipo de tag
+
+    retorna também id e guid criados
+    """
     id: int = Field(example="1")
     nome: str = Field(example='Tag Exemplo')
     nome_de_referencia: str = Field(example='Nome de referência Tag Exemplo')

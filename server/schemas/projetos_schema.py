@@ -9,6 +9,9 @@ from server.schemas.tag_schema import TagOutput
 
 
 class ProjetosInput(AuthenticatorModelInput):
+    """
+    Schema de input do projeto
+    """
     titulo: str = Field(example='Projeto Exemplo')
     descricao: str = Field(example='Isso é um projeto')
 
@@ -21,6 +24,11 @@ class ProjetosInput(AuthenticatorModelInput):
 
 
 class ProjetosOutput(AuthenticatorModelOutput):
+    """
+    Schema de output do projeto
+
+    retorna também id, guid, entidades, tags, created_at e updated_at criados
+    """
     id: int = Field(example="1")
     titulo: str = Field(example='Projeto Exemplo')
     guid: Optional[GUID] = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')

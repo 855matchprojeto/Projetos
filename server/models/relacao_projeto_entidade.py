@@ -8,9 +8,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 
-
 class RelacaoProjetoEntidadeModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo da relação projeto entidade
+    possui relações com projeto e entidade
+    """
     def __init__(self, **kwargs):
         super(RelacaoProjetoEntidadeModel, self).__init__(**kwargs)
 

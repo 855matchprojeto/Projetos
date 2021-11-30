@@ -10,7 +10,10 @@ from datetime import datetime
 
 
 class EntidadeExternaModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo da entidade externa
+    possui relações com projeto e histórico
+    """
     def __init__(self, **kwargs):
         super(EntidadeExternaModel, self).__init__(**kwargs)
 
