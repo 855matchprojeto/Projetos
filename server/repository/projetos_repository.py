@@ -12,6 +12,7 @@ from server.models.relacao_projeto_tag import RelacaoProjetoTagModel
 from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
 from server.models.tag_model import TagModel
 from server.models.interesse_usuario_projeto_model import InteresseUsuarioProjeto
+from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
 
 
 class ProjetoRepository:
@@ -196,4 +197,40 @@ class ProjetoRepository:
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
+
+    async def get_projetos_usuario(self, guid_usuario: str):
+        """
+            Captura os projetos em que o usuário está presente
+            com algum vínculo de função
+        """
+        stmt = (
+            select(ProjetosModel).
+            join(
+                RelacaoProjetoUsuarioModel,
+                RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
+            ).
+            where(RelacaoProjetoUsuarioModel.guid_user == guid_usuario)
+        )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().all()
+
+    async def insere_relacao_usuario_funcao_projeto(
+        self, id_funcao: int, guid_usuario: str, id_projeto: int
+    ):
+        """
+            Vincula uma função de projeto para um
+            usuário
+        """
+        stmt = (
+            insert(RelacaoProjetoUsuarioModel).
+            returning(literal_column('*')).
+            values(
+                id_projetos=id_projeto,
+                id_funcao=id_funcao,
+                guid_user=guid_usuario
+            )
+        )
+        query = await self.db_session.execute(stmt)
+        row_to_dict = dict(query.fetchone())
+        return RelacaoProjetoUsuarioModel(**row_to_dict)
 

@@ -5,6 +5,8 @@ from server.models.projetos_model import ProjetosModel
 from sqlalchemy import or_, and_
 from server.configuration import exceptions
 from server.models.interesse_usuario_projeto_model import InteresseUsuarioProjeto
+from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
+from server.models.funcao_projeto_model import FuncaoProjetoModel
 
 
 class ProjetosService:
@@ -12,9 +14,11 @@ class ProjetosService:
     def __init__(
         self,
         proj_repo: Optional[ProjetoRepository] = None,
-        environment: Optional[Environment] = None
+        environment: Optional[Environment] = None,
+        funcao_proj_repo: Optional[FuncoesProjetoRepository] = None
     ):
         self.proj_repo = proj_repo
+        self.funcao_proj_repo = funcao_proj_repo
         self.environment = environment
 
     async def get(self, id=None, guid=None):
@@ -56,9 +60,24 @@ class ProjetosService:
         """
         novo_projeto_dict = projeto_input.convert_to_dict()
         # Insere no banco de dados e retorna o projeto
+        projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
+        # Vinculando o usuário com uma função de owner
+        await self.link_user_as_owner(guid_usuario, projeto)
+        return projeto
 
-        teste = await self.proj_repo.insere_projeto(novo_projeto_dict)
-        return teste
+    async def link_user_as_owner(self, guid_usuario: str, projeto: ProjetosModel):
+        # Captura a função de OWNER no banco de dados
+        owner_filter = [FuncaoProjetoModel.nome == "OWNER"]
+        funcao_owner = await self.funcao_proj_repo.find_funcoes_by_filtros(owner_filter)
+        if len(funcao_owner) == 0:
+            raise exceptions.FuncaoProjectNotFoundException(
+                detail="Não foi encontrada uma função de OWNER no sistema!"
+            )
+        funcao_owner = funcao_owner[0]
+        # Vinculando o usuário com a função no projeto
+        await self.proj_repo.insere_relacao_usuario_funcao_projeto(
+            funcao_owner.id, guid_usuario, projeto.id
+        )
 
     async def update(self, projeto_input):
         """
@@ -138,4 +157,11 @@ class ProjetosService:
             marcou como seu interesse
         """
         return await self.proj_repo.get_projetos_interesse_usuario(guid_usuario)
+
+    async def get_projetos_usuario(self, guid_usuario: str):
+        """
+            Captura os projetos que o usuário
+            pertence com algum vínculo de função no projeto
+        """
+        return await self.proj_repo.get_projetos_usuario(guid_usuario)
 
