@@ -105,7 +105,6 @@ class ProjetoRepository:
                 where(*filtros)
         )
         query = await self.db_session.execute(stmt)
-        return query.scalars().all()
 
     async def find_projetos_by_ids(self) -> List[ProjetosModel]: #  project_ids: List[int]
         """
