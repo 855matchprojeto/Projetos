@@ -86,7 +86,7 @@ class ProjetosService:
         Returns:
             Projeto criado
         """
-        novo_projeto_dict = projeto_input.convert_to_dict()
+        novo_projeto_dict = projeto_input
         # Insere no banco de dados e retorna o projeto
         projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
         # Vinculando o usuário com uma função de owner
