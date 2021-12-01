@@ -104,9 +104,10 @@ class ProjetoRepository:
             delete(ProjetosModel).
                 where(*filtros)
         )
-        query = await self.db_session.execute(stmt)
 
-    async def find_projetos_by_ids(self, filtros: List) -> List[ProjetosModel]: #  project_ids: List[int]
+        await self.db_session.execute(stmt)
+
+    async def find_projetos_by_ids(self, filtros) -> List[ProjetosModel]: #  project_ids: List[int]
         """
         Método que faz a query para pegar projetos por ids no banco de dados
         Esse método traz todas as informações associadas com o projeto
@@ -156,9 +157,7 @@ class ProjetoRepository:
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
             )
-            ).
-            where( * filtros)
-
+            ).where(*filtros)
 
         )
         query = await self.db_session.execute(stmt)
@@ -234,4 +233,28 @@ class ProjetoRepository:
         query = await self.db_session.execute(stmt)
         row_to_dict = dict(query.fetchone())
         return RelacaoProjetoUsuarioModel(**row_to_dict)
+
+    async def get_owners_projeto(self, id_projeto: int) -> List[str]:
+        """
+            Captura os owners de um projeto
+            Retorna o guids dos owners de um projeto
+        """
+        stmt = (
+            select(RelacaoProjetoUsuarioModel).
+            join(
+                FuncaoProjetoModel,
+                FuncaoProjetoModel.id == RelacaoProjetoUsuarioModel.id_funcao
+            ).
+            where(
+                RelacaoProjetoUsuarioModel.id_projetos == id_projeto,
+                FuncaoProjetoModel.nome == 'OWNER'
+            )
+        )
+
+        query = await self.db_session.execute(stmt)
+        relacoes: List[RelacaoProjetoUsuarioModel] = query.scalars().all()
+
+        return [
+            str(relacao.guid_user) for relacao in relacoes
+        ]
 
