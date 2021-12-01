@@ -9,7 +9,10 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 class ProjetosModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo de projeto
+    possui relações com entidade, tag e usuario
+    """
     def __init__(self, **kwargs):
         super(ProjetosModel, self).__init__(**kwargs)
 
@@ -33,4 +36,10 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     rel_projeto_usuario = relationship(
         "RelacaoProjetoUsuarioModel",
         back_populates="projeto"
+    )
+
+    rel_projeto_interesse = relationship(
+        "InteresseUsuarioProjeto",
+        back_populates="projeto",
+        cascade="all,delete"
     )

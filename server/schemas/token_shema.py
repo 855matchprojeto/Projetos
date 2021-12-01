@@ -7,7 +7,9 @@ from typing import List
 
 
 class AccessTokenOutput(AuthenticatorModelOutput):
-
+    """
+    Schema de output to token de acesso
+    """
     access_token: str
     expires_in: int
     token_type: str
@@ -25,7 +27,9 @@ class AccessTokenOutput(AuthenticatorModelOutput):
 
 
 class DecodedAccessToken(BaseModel):
-
+    """
+    Schema do token de acesso decodificado
+    """
     guid: str
     name: str
     email: EmailStr
@@ -34,8 +38,9 @@ class DecodedAccessToken(BaseModel):
 
 
 class DecodedMailToken(BaseModel):
-
+    """
+    Schema do token de email decodificado
+    """
     name: str
     email: EmailStr
     username: str
-

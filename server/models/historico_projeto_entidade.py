@@ -9,10 +9,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 
 
-
-
 class HistoricoProjetoEntidadeModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo do histórico projeto entidade
+    possui relações com projeto e entidade
+    """
     def __init__(self, **kwargs):
         super(HistoricoProjetoEntidadeModel, self).__init__(**kwargs)
 

@@ -9,7 +9,10 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 class FuncaoProjetoModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo da função
+    possui relação com usuario
+    """
     def __init__(self, **kwargs):
         super(FuncaoProjetoModel, self).__init__(**kwargs)
 

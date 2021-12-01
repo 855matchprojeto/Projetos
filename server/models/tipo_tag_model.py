@@ -10,7 +10,9 @@ from datetime import datetime
 
 
 class TipoDeTagModel(db.Base, AuthenticatorBase):
-
+    """
+    Modelo do tipo de tag
+    """
     def __init__(self, **kwargs):
         super(TipoDeTagModel, self).__init__(**kwargs)
 

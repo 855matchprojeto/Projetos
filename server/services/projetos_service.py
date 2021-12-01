@@ -7,19 +7,41 @@ from server.configuration import exceptions
 from server.models.interesse_usuario_projeto_model import InteresseUsuarioProjeto
 from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
 from server.models.funcao_projeto_model import FuncaoProjetoModel
+from typing import Any
+import json
+from server.schemas.usuario_schema import CurrentUserToken
 
 
 class ProjetosService:
+
+    @staticmethod
+    def get_interesse_projeto_msg_payload(current_user: CurrentUserToken, projeto: ProjetosModel):
+        payload_dict = dict(
+            type='create',
+            user={
+                'guid_usuario': current_user.guid,
+                'nome': current_user.name,
+                'username': current_user.username,
+                'email': current_user.email
+            },
+            project={
+                'titulo': projeto.titulo,
+                'descricao': projeto.descricao
+            },
+        )
+        return json.dumps(payload_dict)
 
     def __init__(
         self,
         proj_repo: Optional[ProjetoRepository] = None,
         environment: Optional[Environment] = None,
-        funcao_proj_repo: Optional[FuncoesProjetoRepository] = None
+        funcao_proj_repo: Optional[FuncoesProjetoRepository] = None,
+        publisher_service: Optional[Any] = None
     ):
         self.proj_repo = proj_repo
         self.funcao_proj_repo = funcao_proj_repo
         self.environment = environment
+        self.publisher_service = publisher_service
 
     async def get(self, id=None, guid=None):
         """
@@ -49,7 +71,7 @@ class ProjetosService:
 
         return projects
 
-    async def create(self, projeto_input):
+    async def create(self, projeto_input, guid_usuario: str):
         """
         Método que faz a lógica de criar um projeto
         Args:
@@ -63,7 +85,6 @@ class ProjetosService:
         projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
         # Vinculando o usuário com uma função de owner
         await self.link_user_as_owner(guid_usuario, projeto)
-        return projeto
 
     async def link_user_as_owner(self, guid_usuario: str, projeto: ProjetosModel):
         # Captura a função de OWNER no banco de dados
@@ -115,9 +136,9 @@ class ProjetosService:
         Returns:
             Nada
         """
-        return await self.proj_repo.delete_projetos_by_filtros(filtros=[ProjetosModel.guid == guid])
+        await self.proj_repo.delete_projetos_by_filtros(filtros=[ProjetosModel.guid == guid])
 
-    async def insert_interesse_usuario_projeto(self, guid_usuario: str, guid_projeto: str):
+    async def insert_interesse_usuario_projeto(self, current_user: CurrentUserToken, guid_projeto: str):
         # Capturando ID do projeto e verifcando sua existência
         projetos_db = await self.proj_repo.find_projetos_by_filtros(
             filtros=[ProjetosModel.guid == guid_projeto]
@@ -128,10 +149,17 @@ class ProjetosService:
             )
         # Vinculando as duas entidades, criando um interesse do usuário pelo projeto
         projeto = projetos_db[0]
-        return await self.proj_repo.insere_interesse_usuario_projeto(
-            guid_usuario,
+        interesse_usuario_projeto = await self.proj_repo.insere_interesse_usuario_projeto(
+            current_user.guid,
             projeto.id
         )
+        # Define um payload para a mensagem de criação
+        # de interesse_usuario_projeto para o publicador de mensagem
+        self.publisher_service.publish(
+            self.get_interesse_projeto_msg_payload(current_user, projeto),
+            self.environment.INTERESSE_USUARIO_PROJETO_ARN
+        )
+        return interesse_usuario_projeto
 
     async def delete_interesse_usuario_projeto(self, guid_usuario: str, guid_projeto: str):
         # Capturando ID do projeto e verifcando sua existência

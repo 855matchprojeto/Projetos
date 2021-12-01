@@ -6,7 +6,9 @@ from typing import List, Optional
 
 
 class FuncaoProjetosInput(AuthenticatorModelInput):
-
+    """
+    Schema de input da função
+    """
     nome: str = Field(example='Função Projeto Exemplo')
     descricao: str = Field(example='Descrição da função')
 
@@ -19,6 +21,11 @@ class FuncaoProjetosInput(AuthenticatorModelInput):
 
 
 class FuncaoProjetosOutput(AuthenticatorModelOutput):
+    """
+    Schema de output da função
+
+    retorna também id, guid, created_at e updated_at criados
+    """
     id: int = Field(example="1")
     nome: str = Field(example='Função Projeto Exemplo')
     guid: GUID = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
