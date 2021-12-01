@@ -67,6 +67,7 @@ class ProjetosService:
                     ProjetosModel.guid == guid
                 )]
 
+
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]

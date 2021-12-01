@@ -14,6 +14,8 @@ class ProjetosInput(AuthenticatorModelInput):
     """
     titulo: str = Field(example='Projeto Exemplo')
     descricao: str = Field(example='Isso é um projeto')
+    entidades: Optional[List[int]] = Field(example=[])
+    tags: Optional[List[int]] = Field(example=[])
 
     def convert_to_dict(self):
         return self.dict()
