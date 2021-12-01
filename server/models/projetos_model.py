@@ -37,3 +37,9 @@ class ProjetosModel(db.Base, AuthenticatorBase):
         "RelacaoProjetoUsuarioModel",
         back_populates="projeto"
     )
+
+    rel_projeto_interesse = relationship(
+        "InteresseUsuarioProjeto",
+        back_populates="projeto",
+        cascade="all,delete"
+    )

@@ -104,8 +104,7 @@ class ProjetoRepository:
             delete(ProjetosModel).
                 where(*filtros)
         )
-        query = await self.db_session.execute(stmt)
-        return query.scalars().all()
+        await self.db_session.execute(stmt)
 
     async def find_projetos_by_ids(self) -> List[ProjetosModel]: #  project_ids: List[int]
         """

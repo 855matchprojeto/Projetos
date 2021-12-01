@@ -115,7 +115,7 @@ class ProjetosService:
         Returns:
             Nada
         """
-        return await self.proj_repo.delete_projetos_by_filtros(filtros=[ProjetosModel.guid == guid])
+        await self.proj_repo.delete_projetos_by_filtros(filtros=[ProjetosModel.guid == guid])
 
     async def insert_interesse_usuario_projeto(self, guid_usuario: str, guid_projeto: str):
         # Capturando ID do projeto e verifcando sua existência
