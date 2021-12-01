@@ -233,3 +233,27 @@ class ProjetoRepository:
         row_to_dict = dict(query.fetchone())
         return RelacaoProjetoUsuarioModel(**row_to_dict)
 
+    async def get_owners_projeto(self, id_projeto: int) -> List[str]:
+        """
+            Captura os owners de um projeto
+            Retorna o guids dos owners de um projeto
+        """
+        stmt = (
+            select(RelacaoProjetoUsuarioModel).
+            join(
+                FuncaoProjetoModel,
+                FuncaoProjetoModel.id == RelacaoProjetoUsuarioModel.id_funcao
+            ).
+            where(
+                RelacaoProjetoUsuarioModel.id_projetos == id_projeto,
+                FuncaoProjetoModel.nome == 'OWNER'
+            )
+        )
+
+        query = await self.db_session.execute(stmt)
+        relacoes: List[RelacaoProjetoUsuarioModel] = query.scalars().all()
+
+        return [
+            str(relacao.guid_user) for relacao in relacoes
+        ]
+

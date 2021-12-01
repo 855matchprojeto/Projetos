@@ -15,7 +15,11 @@ from server.schemas.usuario_schema import CurrentUserToken
 class ProjetosService:
 
     @staticmethod
-    def get_interesse_projeto_msg_payload(current_user: CurrentUserToken, projeto: ProjetosModel):
+    def get_interesse_projeto_msg_payload(
+        current_user: CurrentUserToken,
+        owners: List[str],
+        projeto: ProjetosModel
+    ):
         payload_dict = dict(
             type='create',
             user={
@@ -28,6 +32,7 @@ class ProjetosService:
                 'titulo': projeto.titulo,
                 'descricao': projeto.descricao
             },
+            owners=owners
         )
         return json.dumps(payload_dict)
 
@@ -85,6 +90,7 @@ class ProjetosService:
         projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
         # Vinculando o usuário com uma função de owner
         await self.link_user_as_owner(guid_usuario, projeto)
+        return projeto
 
     async def link_user_as_owner(self, guid_usuario: str, projeto: ProjetosModel):
         # Captura a função de OWNER no banco de dados
@@ -156,7 +162,9 @@ class ProjetosService:
         # Define um payload para a mensagem de criação
         # de interesse_usuario_projeto para o publicador de mensagem
         self.publisher_service.publish(
-            self.get_interesse_projeto_msg_payload(current_user, projeto),
+            self.get_interesse_projeto_msg_payload(
+                current_user, await self.proj_repo.get_owners_projeto(projeto.id), projeto
+            ),
             self.environment.INTERESSE_USUARIO_PROJETO_ARN
         )
         return interesse_usuario_projeto
