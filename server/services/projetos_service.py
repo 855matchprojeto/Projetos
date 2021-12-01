@@ -40,7 +40,7 @@ class ProjetosService:
                     ProjetosModel.guid == guid
                 )]
 
-        projects = await self.proj_repo.find_projetos_by_ids()  # filtros=filtros
+        projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)  # filtros=filtros
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
             tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
@@ -49,7 +49,7 @@ class ProjetosService:
 
         return projects
 
-    async def create(self, projeto_input):
+    async def create(self, projeto_input, guid_usuario: str):
         """
         Método que faz a lógica de criar um projeto
         Args:

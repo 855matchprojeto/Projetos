@@ -3,10 +3,15 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
+from jsonschema import validate
 
 from server.repository.historico_projetos_repository import HistoricoProjetoRepository
+from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
+from server.repository.relacao_projeto_tag_repository import RelacaoProjetoTagRepository
 from server.services.historico_projetos_service import HistoricoProjetosService
 from server.services.projetos_service import ProjetosService
+from server.services.relacao_projeto_entidade_service import RelacaoProjetoEntidadeService
+from server.services.relacao_projeto_tag_service import RelacaoProjetoTagService
 from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput
 from server.dependencies.get_current_user import get_current_user
 from server.schemas import usuario_schema
@@ -17,6 +22,7 @@ from server.configuration.environment import Environment
 from server.dependencies.get_environment_cached import get_environment_cached
 from server.repository.projetos_repository import ProjetoRepository
 from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
+from server.schemas.relacao_projeto_entidade_schema import RelacaoProjetoEntidadeInput
 
 
 router = APIRouter()
@@ -71,6 +77,12 @@ class ProjetosController:
         Returns:
             código 200 (ok) - projeto criado
         """
+        if data.tags:
+            tags = data.tags
+        if data.entidades:
+            entidades = data.entidades
+        del data.tags
+        del data.entidades
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
@@ -81,10 +93,33 @@ class ProjetosController:
             HistoricoProjetoRepository(session, environment),
             environment
         )
-
+        # relação projeto entidade externa
+        rel_entidade_service = RelacaoProjetoEntidadeService(
+            RelacaoProjetoEntidadeRepository(session, environment),
+            environment
+        )
+        # relação projeto tag
+        rel_tag_service = RelacaoProjetoTagService(
+            RelacaoProjetoTagRepository(session, environment),
+            environment
+        )
         guid_usuario = current_user.guid
         await hist_service.create(data)
-        return await service.create(data, guid_usuario)
+        projeto = await service.create(data, guid_usuario)
+        if entidades:
+            data_entidade = []
+            for entidade in entidades:
+                data = {'id_projetos': projeto.id, 'id_entidade': entidade}
+                # rel_entidade = await rel_entidade_service.create(data)
+                data_entidade.append({'id_projetos': projeto.id, 'id_entidade': entidade})
+            rel_entidade = await rel_entidade_service.mult_insert(data_entidade)
+
+        if tags:
+            data_tags = []
+            for tag in tags:
+                data_tags.append({'id_projetos': projeto.id, 'id_tags': tag})
+            rel_tag = await rel_tag_service.mult_insert(data_tags)
+        return projeto
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler

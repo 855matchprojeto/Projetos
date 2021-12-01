@@ -7,6 +7,7 @@ from server.controllers.funcao_projetos_controller import funcao_projeto_router
 from server.controllers.historico_projetos_controller import historico_projetos_router
 from server.controllers.relacao_projeto_usuario_controller import relacao_projeto_usuario_router
 from server.controllers.relacao_projeto_tag_controller import rel_projeto_tag_router
+from server.controllers.relacao_projeto_entidade_controller import rel_projeto_entidade_router
 from server.controllers.tag_controller import tag_router
 from server.controllers.tipo_tag_controller import tipo_tag_router
 from server.controllers.entidade_externa_controller import entidade_externa_router
@@ -29,7 +30,8 @@ routers = [
     tag_router,
     tipo_tag_router,
     entidade_externa_router,
-    rel_projeto_tag_router
+    rel_projeto_tag_router,
+    rel_projeto_entidade_router
 ]
 
 

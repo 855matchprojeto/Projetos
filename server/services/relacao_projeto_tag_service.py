@@ -34,10 +34,11 @@ class RelacaoProjetoTagService():
             await self.delete(relacao.id_projetos, relacao.id_tags);
 
     async def create(self, rel_proj_tag_input):
-        novo_rel_proj_tag_dict = rel_proj_tag_input.convert_to_dict()
+        if type(rel_proj_tag_input) is not dict:
+            rel_proj_tag_input = rel_proj_tag_input.convert_to_dict()
         # Insere no banco de dados e retorna a relacao
 
-        resp = await self.rel_proj_tag_repo.insere_relacao(novo_rel_proj_tag_dict)
+        resp = await self.rel_proj_tag_repo.insere_relacao(rel_proj_tag_input)
         return resp
 
 

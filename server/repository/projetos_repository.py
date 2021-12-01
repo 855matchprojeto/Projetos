@@ -106,7 +106,7 @@ class ProjetoRepository:
         )
         query = await self.db_session.execute(stmt)
 
-    async def find_projetos_by_ids(self) -> List[ProjetosModel]: #  project_ids: List[int]
+    async def find_projetos_by_ids(self, filtros: List) -> List[ProjetosModel]: #  project_ids: List[int]
         """
         Método que faz a query para pegar projetos por ids no banco de dados
         Esse método traz todas as informações associadas com o projeto
@@ -156,7 +156,9 @@ class ProjetoRepository:
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
             )
-            )
+            ).
+            where( * filtros)
+
 
         )
         query = await self.db_session.execute(stmt)

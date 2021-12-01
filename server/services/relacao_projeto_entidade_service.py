@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 from server.configuration.environment import Environment
 from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
 from server.models.relacao_projeto_entidade import RelacaoProjetoEntidadeModel
+from server.schemas.relacao_projeto_entidade_schema import RelacaoProjetoEntidadeInput
 from sqlalchemy import or_, and_
 
 
@@ -22,7 +23,7 @@ class RelacaoProjetoEntidadeService():
                 )]
         return await self.rel_proj_entidade_repo.find_rel_by_filtros(filtros=filtros)
 
-    async def mult_insert(self, relacoes):
+    async def mult_insert(self, relacoes: List[RelacaoProjetoEntidadeInput]):
         resp = []
         for relacao in relacoes:
             data = await self.create(relacao);
@@ -34,10 +35,11 @@ class RelacaoProjetoEntidadeService():
             await self.delete(relacao.id_projetos, relacao.id_entidade);
 
     async def create(self, rel_proj_entidade_input):
-        novo_rel_proj_entidade_dict = rel_proj_entidade_input.convert_to_dict()
+        if type(rel_proj_entidade_input) is not dict:
+            rel_proj_entidade_input = rel_proj_entidade_input.convert_to_dict()
         # Insere no banco de dados e retorna a relacao
 
-        resp = await self.rel_proj_entidade_repo.insere_relacao(novo_rel_proj_entidade_dict)
+        resp = await self.rel_proj_entidade_repo.insere_relacao(rel_proj_entidade_input)
         return resp
 
 
@@ -45,6 +47,6 @@ class RelacaoProjetoEntidadeService():
         filtros = [
             and_(
                 RelacaoProjetoEntidadeModel.id_projetos == id_projetos,
-                RelacaoProjetoEntidadeModel.id_tags == id_entidade
+                RelacaoProjetoEntidadeModel.id_entidade == id_entidade
             )]
         await self.rel_proj_entidade_repo.delete_relacao_by_filtros(filtros=filtros)
