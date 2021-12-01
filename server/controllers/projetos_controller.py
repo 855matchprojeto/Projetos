@@ -3,7 +3,6 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
-from jsonschema import validate
 
 from server.repository.historico_projetos_repository import HistoricoProjetoRepository
 from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
