@@ -26,6 +26,16 @@ class Environment(BaseSettings):
     ACCESS_TOKEN_SECRET_KEY: str
     ACCESS_TOKEN_ALGORITHM: str
 
+    # Configurações AWS
+
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_KEY: str
+    AWS_REGION_NAME: str
+
+    # TOPIC ARN
+
+    INTERESSE_USUARIO_PROJETO_ARN: str
+
     @staticmethod
     def get_db_conn_async(database_url: str):
         return re.sub(r'\bpostgres://\b', "postgresql+asyncpg://", database_url, count=1)

@@ -16,6 +16,8 @@ from server.repository.projetos_repository import ProjetoRepository
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
 from fastapi import APIRouter, Depends, Security, status, Response
 from server.schemas.projetos_schema import ProjetosOutput, SimpleProjetosOutput
+from server.dependencies.get_sns_publisher_service import get_sns_publisher_service
+from server.services.aws_publisher_service import AWSPublisherService
 
 
 router = APIRouter()
@@ -202,6 +204,7 @@ async def link_project_as_current_user_interest(
     current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
     session: AsyncSession = Depends(get_session),
     environment: Environment = Depends(get_environment_cached),
+    publisher_service: AWSPublisherService = Depends(get_sns_publisher_service)
 ):
 
     """
@@ -223,12 +226,12 @@ async def link_project_as_current_user_interest(
 
     projetos_service = ProjetosService(
         proj_repo=ProjetoRepository(session, environment),
-        environment=environment
+        environment=environment,
+        publisher_service=publisher_service
     )
 
-    guid_curr_user = current_user.guid
     return await projetos_service.insert_interesse_usuario_projeto(
-        guid_curr_user, guid_projeto
+        current_user, guid_projeto
     )
 
 
