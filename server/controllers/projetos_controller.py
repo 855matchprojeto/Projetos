@@ -11,7 +11,7 @@ from server.services.historico_projetos_service import HistoricoProjetosService
 from server.services.projetos_service import ProjetosService
 from server.services.relacao_projeto_entidade_service import RelacaoProjetoEntidadeService
 from server.services.relacao_projeto_tag_service import RelacaoProjetoTagService
-from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput
+from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput, ProjetosInputUpdate
 from server.dependencies.get_current_user import get_current_user
 from server.schemas import usuario_schema
 from server.controllers import endpoint_exception_handler
@@ -165,7 +165,7 @@ class ProjetosController:
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
-    async def put_projetos(self, guid, data: ProjetosInput,
+    async def put_projetos(self, guid, data: ProjetosInputUpdate,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):

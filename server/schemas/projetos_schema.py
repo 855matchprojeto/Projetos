@@ -9,6 +9,20 @@ from server.schemas.tag_schema import TagOutput
 from server.schemas.interesse_schema import InteresseOutput
 from server.schemas.curso_schema import CursoOutput
 
+class ProjetosInputUpdate(AuthenticatorModelInput):
+    """
+    Schema de input do projeto para update
+    """
+    titulo: str = Field(example='Projeto Exemplo')
+    descricao: str = Field(example='Isso é um projeto')
+    url_imagem: Optional[str] = Field(example='https://teste.com.br')
+
+    def convert_to_dict(self):
+        return self.dict()
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
 
 class ProjetosInput(AuthenticatorModelInput):
     """
