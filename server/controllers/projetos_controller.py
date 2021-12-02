@@ -76,12 +76,20 @@ class ProjetosController:
         Returns:
             código 200 (ok) - projeto criado
         """
-        if data.tags:
-            tags = data.tags
-        if data.entidades:
-            entidades = data.entidades
-        del data.tags
-        del data.entidades
+        data = data.convert_to_dict()
+        if data["tags"]:
+            tags = data["tags"]
+        else:
+            tags = []
+
+        if data["entidades"]:
+            entidades = data["entidades"]
+        else:
+            entidades = []
+
+        del data["tags"]
+        del data["entidades"]
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
