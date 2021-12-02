@@ -48,7 +48,7 @@ class ProjetosService:
         self.environment = environment
         self.publisher_service = publisher_service
 
-    async def get(self, id=None, guid=None):
+    async def get(self, id=None, guid=None, titulo_ilike=None):
         """
         Método que faz a lógica de pegar os projetos
         Args:
@@ -67,6 +67,8 @@ class ProjetosService:
                     ProjetosModel.guid == guid
                 )]
 
+        if titulo_ilike:
+            filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
 
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:

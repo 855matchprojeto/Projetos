@@ -41,7 +41,7 @@ class HistoricoProjetosService():
 
         return projects_history
 
-    async def create(self, projeto_input):
+    async def create(self, projeto_input: dict):
         """
         Método que faz a lógica de criar um histórico
         Args:
