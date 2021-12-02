@@ -22,6 +22,7 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     titulo = Column(String(), nullable=False)
     descricao = Column(String())
+    url_imagem = Column(String())
 
     rel_projeto_entidade = relationship(
         "RelacaoProjetoEntidadeModel",

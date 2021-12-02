@@ -13,6 +13,7 @@ class HistoricoProjetosInput(AuthenticatorModelInput):
     titulo: str = Field(example='Projeto Exemplo')
     guid: str = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
     descricao: str = Field(example='Isso é um projeto')
+    url_imagem: Optional[str] = Field(example='https://teste.com.br')
 
     def convert_to_dict(self):
         return self.dict()
@@ -32,6 +33,7 @@ class HistoricoProjetosOutput(AuthenticatorModelOutput):
     titulo: str = Field(example='Projeto Exemplo')
     guid: Optional[GUID] = Field(example='78628c23-aae3-4d58-84a9-0c8d7ea63672')
     descricao: str = Field(example='Isso é um projeto')
+    url_imagem: Optional[str] = Field(example='https://teste.com.br')
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
 
