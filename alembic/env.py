@@ -42,7 +42,11 @@ from server.models import (
     historico_projetos_usuarios_model,
     relacao_projeto_entidade,
     relacao_projeto_tag,
-    relacao_projeto_usuario_model
+    relacao_projeto_usuario_model,
+    curso_model,
+    interesse_model,
+    relacao_projeto_curso,
+    relacao_projeto_interesse
 )
 
 
