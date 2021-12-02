@@ -50,6 +50,8 @@ class HistoricoProjetosService():
         Returns:
             Histórico criado
         """
+        if type(projeto_input) is not dict:
+            projeto_input = projeto_input.convert_to_dict()
         teste = await self.hist_repo.insere_projeto(projeto_input)
 
         return teste

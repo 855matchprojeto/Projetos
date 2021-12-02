@@ -6,6 +6,8 @@ from uuid import UUID as GUID
 
 from server.schemas.entidade_externa_schema import EntidadeExternaOutput
 from server.schemas.tag_schema import TagOutput
+from server.schemas.interesse_schema import InteresseOutput
+from server.schemas.curso_schema import CursoOutput
 
 
 class ProjetosInput(AuthenticatorModelInput):
@@ -16,6 +18,10 @@ class ProjetosInput(AuthenticatorModelInput):
     descricao: str = Field(example='Isso é um projeto')
     entidades: Optional[List[int]] = Field(example=[])
     tags: Optional[List[int]] = Field(example=[])
+    cursos: Optional[List[int]] = Field(example=[])
+    interesses: Optional[List[int]] = Field(example=[])
+
+
 
     def convert_to_dict(self):
         return self.dict()
@@ -37,6 +43,8 @@ class ProjetosOutput(AuthenticatorModelOutput):
     descricao: str = Field(example='Isso é um projeto')
     entidades: Optional[List[EntidadeExternaOutput]] = Field(example=[])
     tags: Optional[List[TagOutput]] = Field(example=[])
+    cursos: Optional[List[CursoOutput]] = Field(example=[])
+    interesses: Optional[List[InteresseOutput]] = Field(example=[])
     # usuarios: List[UsuarioOutput] = Field(example=[])
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
