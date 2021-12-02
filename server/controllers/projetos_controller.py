@@ -37,6 +37,7 @@ class ProjetosController:
     @router.get("/projetos", response_model=List[ProjetosOutput])
     @endpoint_exception_handler
     async def get_projetos(self, id: Optional[int] = None, guid: Optional[str] = None,
+                           titulo_ilike: Optional[str] = None,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
@@ -57,7 +58,7 @@ class ProjetosController:
             ProjetoRepository(session, environment),
             environment
         )
-        return await service.get(id=id, guid=guid)
+        return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike)
 
     @router.post(path="/projetos", response_model=ProjetosOutput)
     @endpoint_exception_handler
