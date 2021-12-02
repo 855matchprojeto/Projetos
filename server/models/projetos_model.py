@@ -38,6 +38,16 @@ class ProjetosModel(db.Base, AuthenticatorBase):
         back_populates="projeto"
     )
 
+    rel_projeto_curso = relationship(
+        "RelacaoProjetoCursoModel",
+        back_populates="projeto"
+    )
+
+    relacao_projeto_interesse = relationship(
+        "RelacaoProjetoInteresseModel",
+        back_populates="projeto"
+    )
+
     rel_projeto_interesse = relationship(
         "InteresseUsuarioProjeto",
         back_populates="projeto",

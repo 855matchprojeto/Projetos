@@ -21,7 +21,10 @@ from server.configuration.environment import Environment
 from server.dependencies.get_environment_cached import get_environment_cached
 from server.repository.projetos_repository import ProjetoRepository
 from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
-from server.schemas.relacao_projeto_entidade_schema import RelacaoProjetoEntidadeInput
+from server.services.relacao_projeto_curso_service import RelacaoProjetoCursoService
+from server.services.relacao_projeto_interesse_service import RelacaoProjetoInteresseService
+from server.repository.relacao_projeto_curso_repository import RelacaoProjetoCursoRepository
+from server.repository.relacao_projeto_interesse_repository import RelacaoProjetoInteresseRepository
 
 
 router = APIRouter()
@@ -76,12 +79,28 @@ class ProjetosController:
         Returns:
             código 200 (ok) - projeto criado
         """
-        if data.tags:
-            tags = data.tags
-        if data.entidades:
-            entidades = data.entidades
-        del data.tags
-        del data.entidades
+        data = data.convert_to_dict()
+        if data["tags"]:
+            tags = data["tags"]
+        else:
+            tags = []
+        if data["entidades"]:
+            entidades = data["entidades"]
+        else:
+            entidades = []
+        if data["cursos"]:
+            cursos = data["cursos"]
+        else:
+            cursos = []
+        if data["interesses"]:
+            interesses = data["interesses"]
+        else:
+            interesses = []
+        del data["tags"]
+        del data["entidades"]
+        del data["cursos"]
+        del data["interesses"]
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
@@ -102,6 +121,16 @@ class ProjetosController:
             RelacaoProjetoTagRepository(session, environment),
             environment
         )
+        # relação projeto curso
+        rel_curso_service = RelacaoProjetoCursoService(
+            RelacaoProjetoCursoRepository(session, environment),
+            environment
+        )
+        # relação projeto interesse
+        rel_interesse_service = RelacaoProjetoInteresseService(
+            RelacaoProjetoInteresseRepository(session, environment),
+            environment
+        )
         guid_usuario = current_user.guid
         await hist_service.create(data)
         projeto = await service.create(data, guid_usuario)
@@ -118,6 +147,19 @@ class ProjetosController:
             for tag in tags:
                 data_tags.append({'id_projetos': projeto.id, 'id_tags': tag})
             rel_tag = await rel_tag_service.mult_insert(data_tags)
+
+        if cursos:
+            data_cursos = []
+            for curso in cursos:
+                data_cursos.append({'id_projetos': projeto.id, 'id_cursos': curso})
+            rel_curso = await rel_curso_service.mult_insert(data_cursos)
+
+        if interesses:
+            data_interesses = []
+            for interesse in interesses:
+                data_interesses.append({'id_projetos': projeto.id, 'id_interesses': interesse})
+            rel_interesse = await rel_interesse_service.mult_insert(data_interesses)
+
         return projeto
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
