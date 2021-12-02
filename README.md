@@ -74,7 +74,7 @@ O FAST-API implementa a especificação ASGI (Asynchronous Server Gateway Interf
 
 ### LINK DA API ATUAL
 
-https://authenticator-match-projetos.herokuapp.com/docs
+https://projetos-match-projetos.herokuapp.com/docs
 
 ### SQL-Alchemy
 
