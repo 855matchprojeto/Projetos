@@ -13,6 +13,11 @@ from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioMod
 from server.models.tag_model import TagModel
 from server.models.interesse_usuario_projeto_model import InteresseUsuarioProjeto
 from server.models.relacao_projeto_usuario_model import RelacaoProjetoUsuarioModel
+from server.models.curso_model import CursoModel
+from server.models.interesse_model import InteresseModel
+from server.models.relacao_projeto_curso import RelacaoProjetoCursoModel
+from server.models.relacao_projeto_interesse import RelacaoProjetoInteresseModel
+
 
 
 class ProjetoRepository:
@@ -104,6 +109,7 @@ class ProjetoRepository:
             delete(ProjetosModel).
                 where(*filtros)
         )
+
         await self.db_session.execute(stmt)
 
     async def find_projetos_by_ids(self, filtros) -> List[ProjetosModel]: #  project_ids: List[int]
@@ -143,6 +149,22 @@ class ProjetoRepository:
                 FuncaoProjetoModel,
                 RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
             )
+            .outerjoin(
+                RelacaoProjetoCursoModel,
+                RelacaoProjetoCursoModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                CursoModel,
+                RelacaoProjetoCursoModel.id_cursos == CursoModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoInteresseModel,
+                RelacaoProjetoInteresseModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                InteresseModel,
+                RelacaoProjetoInteresseModel.id_interesses == InteresseModel.id
+            )
             .options(
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
@@ -155,6 +177,14 @@ class ProjetoRepository:
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_curso).
+                        selectinload(RelacaoProjetoCursoModel.curso)
+            ),
+                (
+                    selectinload(ProjetosModel.relacao_projeto_interesse).
+                        selectinload(RelacaoProjetoInteresseModel.interesse)
             )
             ).where(*filtros)
 

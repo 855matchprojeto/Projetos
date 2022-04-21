@@ -22,6 +22,7 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     titulo = Column(String(), nullable=False)
     descricao = Column(String())
+    url_imagem = Column(String())
 
     rel_projeto_entidade = relationship(
         "RelacaoProjetoEntidadeModel",
@@ -35,6 +36,16 @@ class ProjetosModel(db.Base, AuthenticatorBase):
 
     rel_projeto_usuario = relationship(
         "RelacaoProjetoUsuarioModel",
+        back_populates="projeto"
+    )
+
+    rel_projeto_curso = relationship(
+        "RelacaoProjetoCursoModel",
+        back_populates="projeto"
+    )
+
+    relacao_projeto_interesse = relationship(
+        "RelacaoProjetoInteresseModel",
         back_populates="projeto"
     )
 

@@ -6,7 +6,11 @@ from server.controllers.projetos_controller import projetos_router
 from server.controllers.funcao_projetos_controller import funcao_projeto_router
 from server.controllers.historico_projetos_controller import historico_projetos_router
 from server.controllers.relacao_projeto_usuario_controller import relacao_projeto_usuario_router
+from server.controllers.relacao_projeto_tag_controller import rel_projeto_tag_router
+from server.controllers.relacao_projeto_entidade_controller import rel_projeto_entidade_router
 from server.controllers.tag_controller import tag_router
+from server.controllers.interesse_controller import interesse_router
+
 from server.controllers.tipo_tag_controller import tipo_tag_router
 from server.controllers.entidade_externa_controller import entidade_externa_router
 from starlette_context.middleware import RawContextMiddleware
@@ -16,6 +20,9 @@ from server.middleware.plugins import custom_request_plugin
 from server.configuration import db
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from server.controllers.curso_controller import curso_router
+from server.controllers.relacao_projeto_curso_controller import rel_projeto_curso_router
+from server.controllers.relacao_projeto_interesse_controller import rel_projeto_interesse_router
 
 
 routers = [
@@ -27,7 +34,13 @@ routers = [
     relacao_projeto_usuario_router,
     tag_router,
     tipo_tag_router,
-    entidade_externa_router
+    entidade_externa_router,
+    rel_projeto_tag_router,
+    rel_projeto_entidade_router,
+    interesse_router,
+    curso_router,
+    rel_projeto_interesse_router,
+    rel_projeto_curso_router
 ]
 
 

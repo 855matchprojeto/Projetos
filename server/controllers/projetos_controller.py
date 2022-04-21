@@ -5,9 +5,13 @@ from typing import Optional
 from typing import List
 
 from server.repository.historico_projetos_repository import HistoricoProjetoRepository
+from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
+from server.repository.relacao_projeto_tag_repository import RelacaoProjetoTagRepository
 from server.services.historico_projetos_service import HistoricoProjetosService
 from server.services.projetos_service import ProjetosService
-from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput
+from server.services.relacao_projeto_entidade_service import RelacaoProjetoEntidadeService
+from server.services.relacao_projeto_tag_service import RelacaoProjetoTagService
+from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput, ProjetosInputUpdate
 from server.dependencies.get_current_user import get_current_user
 from server.schemas import usuario_schema
 from server.controllers import endpoint_exception_handler
@@ -17,6 +21,10 @@ from server.configuration.environment import Environment
 from server.dependencies.get_environment_cached import get_environment_cached
 from server.repository.projetos_repository import ProjetoRepository
 from server.repository.funcoes_projeto_repository import FuncoesProjetoRepository
+from server.services.relacao_projeto_curso_service import RelacaoProjetoCursoService
+from server.services.relacao_projeto_interesse_service import RelacaoProjetoInteresseService
+from server.repository.relacao_projeto_curso_repository import RelacaoProjetoCursoRepository
+from server.repository.relacao_projeto_interesse_repository import RelacaoProjetoInteresseRepository
 
 
 router = APIRouter()
@@ -32,6 +40,7 @@ class ProjetosController:
     @router.get("/projetos", response_model=List[ProjetosOutput])
     @endpoint_exception_handler
     async def get_projetos(self, id: Optional[int] = None, guid: Optional[str] = None,
+                           titulo_ilike: Optional[str] = None,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
@@ -52,7 +61,7 @@ class ProjetosController:
             ProjetoRepository(session, environment),
             environment
         )
-        return await service.get(id=id, guid=guid)
+        return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike)
 
     @router.post(path="/projetos", response_model=ProjetosOutput)
     @endpoint_exception_handler
@@ -71,6 +80,28 @@ class ProjetosController:
         Returns:
             código 200 (ok) - projeto criado
         """
+        data = data.convert_to_dict()
+        if data["tags"]:
+            tags = data["tags"]
+        else:
+            tags = []
+        if data["entidades"]:
+            entidades = data["entidades"]
+        else:
+            entidades = []
+        if data["cursos"]:
+            cursos = data["cursos"]
+        else:
+            cursos = []
+        if data["interesses"]:
+            interesses = data["interesses"]
+        else:
+            interesses = []
+        del data["tags"]
+        del data["entidades"]
+        del data["cursos"]
+        del data["interesses"]
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
@@ -81,14 +112,60 @@ class ProjetosController:
             HistoricoProjetoRepository(session, environment),
             environment
         )
-
+        # relação projeto entidade externa
+        rel_entidade_service = RelacaoProjetoEntidadeService(
+            RelacaoProjetoEntidadeRepository(session, environment),
+            environment
+        )
+        # relação projeto tag
+        rel_tag_service = RelacaoProjetoTagService(
+            RelacaoProjetoTagRepository(session, environment),
+            environment
+        )
+        # relação projeto curso
+        rel_curso_service = RelacaoProjetoCursoService(
+            RelacaoProjetoCursoRepository(session, environment),
+            environment
+        )
+        # relação projeto interesse
+        rel_interesse_service = RelacaoProjetoInteresseService(
+            RelacaoProjetoInteresseRepository(session, environment),
+            environment
+        )
         guid_usuario = current_user.guid
         await hist_service.create(data)
-        return await service.create(data, guid_usuario)
+        projeto = await service.create(data, guid_usuario)
+        if entidades:
+            data_entidade = []
+            for entidade in entidades:
+                data = {'id_projetos': projeto.id, 'id_entidade': entidade}
+                # rel_entidade = await rel_entidade_service.create(data)
+                data_entidade.append({'id_projetos': projeto.id, 'id_entidade': entidade})
+            rel_entidade = await rel_entidade_service.mult_insert(data_entidade)
+
+        if tags:
+            data_tags = []
+            for tag in tags:
+                data_tags.append({'id_projetos': projeto.id, 'id_tags': tag})
+            rel_tag = await rel_tag_service.mult_insert(data_tags)
+
+        if cursos:
+            data_cursos = []
+            for curso in cursos:
+                data_cursos.append({'id_projetos': projeto.id, 'id_cursos': curso})
+            rel_curso = await rel_curso_service.mult_insert(data_cursos)
+
+        if interesses:
+            data_interesses = []
+            for interesse in interesses:
+                data_interesses.append({'id_projetos': projeto.id, 'id_interesses': interesse})
+            rel_interesse = await rel_interesse_service.mult_insert(data_interesses)
+
+        return projeto
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
-    async def put_projetos(self, guid, data: ProjetosInput,
+    async def put_projetos(self, guid, data: ProjetosInputUpdate,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):

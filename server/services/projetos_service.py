@@ -48,7 +48,7 @@ class ProjetosService:
         self.environment = environment
         self.publisher_service = publisher_service
 
-    async def get(self, id=None, guid=None):
+    async def get(self, id=None, guid=None, titulo_ilike=None):
         """
         Método que faz a lógica de pegar os projetos
         Args:
@@ -67,12 +67,19 @@ class ProjetosService:
                     ProjetosModel.guid == guid
                 )]
 
+        if titulo_ilike:
+            filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
+
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
             tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
+            cursos = [rel_projeto_curso.curso for rel_projeto_curso in project.rel_projeto_curso]
+            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in project.relacao_projeto_interesse]
             project.entidades = entidades
             project.tags = tags
+            project.cursos = cursos
+            project.interesses = interesses
 
         return projects
 
@@ -85,9 +92,10 @@ class ProjetosService:
         Returns:
             Projeto criado
         """
-        novo_projeto_dict = projeto_input.convert_to_dict()
+        if type(projeto_input) is not dict:
+            projeto_input = projeto_input.convert_to_dict()
         # Insere no banco de dados e retorna o projeto
-        projeto = await self.proj_repo.insere_projeto(novo_projeto_dict)
+        projeto = await self.proj_repo.insere_projeto(projeto_input)
         # Vinculando o usuário com uma função de owner
         await self.link_user_as_owner(guid_usuario, projeto)
         return projeto
