@@ -192,13 +192,73 @@ class ProjetoRepository:
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
-    async def insere_interesse_usuario_projeto(self, guid_usuario: str, id_projeto: int) -> InteresseUsuarioProjeto:
+    @staticmethod
+    def update_body_if_match(obj_in_db: InteresseUsuarioProjeto, body: dict):
+        fl_usuario_interesse = (
+           body['fl_usuario_interesse']
+           if 'fl_usuario_interesse' in body
+           else obj_in_db.fl_usuario_interesse if obj_in_db else False
+        )
+
+        fl_projeto_interesse = (
+            body['fl_projeto_interesse']
+            if 'fl_projeto_interesse' in body
+            else obj_in_db.fl_projeto_interesse if obj_in_db else False
+        )
+
+        fl_match = fl_usuario_interesse and fl_projeto_interesse
+
+        body['fl_match'] = fl_match
+
+    async def upsert_interesse_usuario_projeto(
+        self, guid_usuario: str, id_projeto: int, body: dict,
+        obj_in_db: Optional[InteresseUsuarioProjeto] = None
+    ) -> InteresseUsuarioProjeto:
+        self.update_body_if_match(obj_in_db, body)
+
+        if obj_in_db:
+            return await self.update_interesse_usuario_projeto(guid_usuario, id_projeto, body)
+        return await self.insert_interesse_usuario_projeto(guid_usuario, id_projeto, body)
+
+    async def find_interesse_usuario_projeto(
+        self, guid_usuario: str, id_projeto: int
+    ) -> InteresseUsuarioProjeto:
+        stmt = (
+            select(InteresseUsuarioProjeto).
+            where(
+                InteresseUsuarioProjeto.guid_usuario == guid_usuario,
+                InteresseUsuarioProjeto.id_projeto == id_projeto
+            )
+        )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().first()
+
+    async def update_interesse_usuario_projeto(
+        self, guid_usuario: str, id_projeto: int, body: dict
+    ) -> InteresseUsuarioProjeto:
+        stmt = (
+            update(InteresseUsuarioProjeto).
+            where(
+                InteresseUsuarioProjeto.id_projeto == id_projeto,
+                InteresseUsuarioProjeto.guid_usuario == guid_usuario,
+            ).
+            returning(literal_column('*')).
+            values(**body)
+        )
+        query = await self.db_session.execute(stmt)
+        row_to_dict = dict(query.fetchone())
+        return InteresseUsuarioProjeto(**row_to_dict)
+
+    async def insert_interesse_usuario_projeto(
+        self, guid_usuario: str, id_projeto: int, body: dict
+    ) -> InteresseUsuarioProjeto:
         stmt = (
             insert(InteresseUsuarioProjeto).
             returning(literal_column('*')).
             values(
                 id_projeto=id_projeto,
-                guid_usuario=guid_usuario
+                guid_usuario=guid_usuario,
+                **body
             )
         )
         query = await self.db_session.execute(stmt)
@@ -212,17 +272,44 @@ class ProjetoRepository:
         )
         await self.db_session.execute(stmt)
 
-    async def get_projetos_interesse_usuario(self, guid_usuario: str):
+    async def get_usuarios_interessados_projeto(self, guid_projeto: str, filters=None):
         """
-            Captura os projetos que o usuário marcou como interesse
+            Captura os usuários interessados pelo projeto a partir da tabela
+            tb_interesse_usuario_projeto
         """
+
+        if not filters:
+            filters = []
+        filters.append(ProjetosModel.guid == guid_projeto)
+
+        stmt = (
+            select(InteresseUsuarioProjeto).
+            join(
+                ProjetosModel,
+                InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
+            ).
+            where(*filters)
+        )
+        query = await self.db_session.execute(stmt)
+        return query.scalars().all()
+
+    async def get_projetos_interesse_usuario(self, guid_usuario: str, filters=None):
+        """
+            Captura os projetos que o usuário está marcado como interesse
+            em alguma das partes
+        """
+
+        if not filters:
+            filters = []
+        filters.append(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
+
         stmt = (
             select(ProjetosModel).
             join(
                 InteresseUsuarioProjeto,
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
-            where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
+            where(*filters)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()

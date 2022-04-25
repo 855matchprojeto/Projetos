@@ -1,6 +1,6 @@
 import uuid
 from uuid import UUID as GUID
-from sqlalchemy import Column, BigInteger, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, BigInteger, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.orm import relationship
 
 from server.models import AuthenticatorBase
@@ -29,6 +29,10 @@ class InteresseUsuarioProjeto(db.Base, AuthenticatorBase):
 
     guid_usuario = Column(UUID(as_uuid=True), nullable=False, unique=False, default=uuid.uuid4)
     id_projeto = Column(BigInteger, ForeignKey("tb_projetos.id"))
+
+    fl_usuario_interesse = Column(Boolean, default=False)  # Interesse de usuário pelo projeto
+    fl_projeto_interesse = Column(Boolean, default=False)  # Interesse de projeto pelo usuário
+    fl_match = Column(Boolean, default=False)  # fl_usuario_interesse and fl_projeto_interesse -> Match
 
     projeto = relationship("ProjetosModel", back_populates="rel_projeto_interesse", cascade="all,delete")
 
