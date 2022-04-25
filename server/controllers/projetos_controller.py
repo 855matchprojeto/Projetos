@@ -25,6 +25,8 @@ from server.services.relacao_projeto_curso_service import RelacaoProjetoCursoSer
 from server.services.relacao_projeto_interesse_service import RelacaoProjetoInteresseService
 from server.repository.relacao_projeto_curso_repository import RelacaoProjetoCursoRepository
 from server.repository.relacao_projeto_interesse_repository import RelacaoProjetoInteresseRepository
+from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
+from server.schemas import error_schema
 
 
 router = APIRouter()
@@ -209,3 +211,62 @@ class ProjetosController:
         )
         await service.delete(guid)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    @router.get(
+        "/projects/{guid_projeto}/user-project-interest",
+        tags=[
+            "Projetos",
+            "InteresseUsuarioProjeto"
+        ],
+        response_model=List[InteresseUsuarioProjetoOutput],
+        summary='Retorna os usuários com interesse pelo projeto ou no qual o projeto está interessado',
+        response_description=f'Retorna os usuários com interesse pelo projeto ou no qual o projeto está interessado. Note que' \
+                             f'são retornados os usuários a partir da tabela "InteresseUsuarioProjeto". Para capturar informações' \
+                             f'de perfil será necessário realizar uma requisição para outro microserviço',
+        responses={
+            401: {
+                'model': error_schema.ErrorOutput401,
+            },
+            422: {
+                'model': error_schema.ErrorOutput422,
+            },
+            500: {
+                'model': error_schema.ErrorOutput500
+            }
+        }
+    )
+    @endpoint_exception_handler
+    async def get_usuarios_interessados_projeto_by_filtros(
+        self, guid_projeto: str,
+        fl_usuario_interesse: Optional[bool] = None,
+        fl_projeto_interesse: Optional[bool] = None,
+        fl_match: Optional[bool] = None,
+        _: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+        session: AsyncSession = Depends(get_session),
+        environment: Environment = Depends(get_environment_cached),
+    ):
+
+        """
+            # Descrição
+
+            Retorna os projetos que o usuário marcou como de seu interesse
+
+            # Erros
+
+            Segue a lista de erros, por (**error_id**, **status_code**), que podem ocorrer nesse endpoint:
+
+            - **(INVALID_OR_EXPIRED_TOKEN, 401)**: Token de acesso inválido ou expirado.
+            - **(REQUEST_VALIDATION_ERROR, 422)**: Validação padrão da requisição. O detalhamento é um JSON,
+            no formato de string, contendo os erros de validação encontrados.
+            - **(INTERNAL_SERVER_ERROR, 500)**: Erro interno no sistema
+
+        """
+
+        projetos_service = ProjetosService(
+            proj_repo=ProjetoRepository(session, environment),
+            environment=environment
+        )
+
+        return await projetos_service.get_usuarios_interessados_projeto_by_filtros(
+            guid_projeto, fl_usuario_interesse, fl_projeto_interesse, fl_match
+        )

@@ -10,28 +10,59 @@ from server.models.funcao_projeto_model import FuncaoProjetoModel
 from typing import Any
 import json
 from server.schemas.usuario_schema import CurrentUserToken
+from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
+from server.schemas.projetos_schema import ProjetosOutput
 
 
 class ProjetosService:
 
     @staticmethod
-    def get_interesse_projeto_msg_payload(
-        current_user: CurrentUserToken,
-        owners: List[str],
-        projeto: ProjetosModel
+    def build_projeto_payload(projeto: ProjetosModel):
+        return {
+            'id': projeto.id,
+            'guid': str(projeto.guid),
+            'titulo': projeto.titulo,
+            'descricao': projeto.descricao,
+            'url_imagem': projeto.url_imagem
+        }
+
+    @staticmethod
+    def build_interesse_usuario_projeto_msg_payload(
+        guid_usuario: str, owners: List[str], projeto: ProjetosModel
     ):
         payload_dict = dict(
-            type='create',
+            type='INTERESSE_USUARIO_PROJETO',
             user={
-                'guid_usuario': current_user.guid,
-                'nome': current_user.name,
-                'username': current_user.username,
-                'email': current_user.email
+                'guid_usuario': guid_usuario,
             },
-            project={
-                'titulo': projeto.titulo,
-                'descricao': projeto.descricao
+            project=ProjetosService.build_projeto_payload(projeto),
+            owners=owners
+        )
+        return json.dumps(payload_dict)
+
+    @staticmethod
+    def build_interesse_projeto_usuario_msg_payload(
+        guid_usuario: str, projeto: ProjetosModel
+    ):
+        payload_dict = dict(
+            type='INTERESSE_PROJETO_USUARIO',
+            user={
+                'guid_usuario': guid_usuario,
             },
+            project=ProjetosService.build_projeto_payload(projeto),
+        )
+        return json.dumps(payload_dict)
+
+    @staticmethod
+    def build_match_msg_payload(
+        guid_usuario: str, owners: List[str], projeto: ProjetosModel
+    ):
+        payload_dict = dict(
+            type='MATCH',
+            user={
+                'guid_usuario': guid_usuario,
+            },
+            project=ProjetosService.build_projeto_payload(projeto),
             owners=owners
         )
         return json.dumps(payload_dict)
@@ -167,14 +198,109 @@ class ProjetosService:
             current_user.guid,
             projeto.id
         )
-        # Define um payload para a mensagem de criação
-        # de interesse_usuario_projeto para o publicador de mensagem
-        self.publisher_service.publish(
-            self.get_interesse_projeto_msg_payload(
-                current_user, await self.proj_repo.get_owners_projeto(projeto.id), projeto
+
+        await self.publish_usuario_projeto_interesse_notification(current_user.guid, projeto)
+
+        return interesse_usuario_projeto
+
+    async def publish_match_notification(
+        self, guid_usuario: str, projeto: ProjetosModel
+    ):
+        return self.publisher_service.publish(
+            self.build_match_msg_payload(
+                guid_usuario, await self.proj_repo.get_owners_projeto(projeto.id), projeto
             ),
             self.environment.INTERESSE_USUARIO_PROJETO_ARN
         )
+
+    async def publish_projeto_usuario_interesse_notification(
+        self, guid_usuario: str, projeto: ProjetosModel
+    ):
+        # Define um payload para a mensagem de criação
+        # de interesse de um projeto para um usuário para o publicador de mensagem
+
+        return self.publisher_service.publish(
+            self.build_interesse_projeto_usuario_msg_payload(
+                guid_usuario, projeto
+            ),
+            self.environment.INTERESSE_USUARIO_PROJETO_ARN
+        )
+
+    async def publish_usuario_projeto_interesse_notification(
+        self, guid_usuario: str, projeto: ProjetosModel
+    ):
+        # Define um payload para a mensagem de criação
+        # de interesse de um usuário para o projeto para o publicador de mensagem
+
+        return self.publisher_service.publish(
+            self.build_interesse_usuario_projeto_msg_payload(
+                guid_usuario, await self.proj_repo.get_owners_projeto(projeto.id), projeto
+            ),
+            self.environment.INTERESSE_USUARIO_PROJETO_ARN
+        )
+
+    async def publish_notification_interesse(
+        self, projeto: ProjetosModel, old_interesse_usuario_projeto: InteresseUsuarioProjeto,
+        interesse_usuario_projeto: InteresseUsuarioProjeto, input_body_dict: dict
+     ):
+        fl_changed_usuario_interesse = (
+            input_body_dict.get('fl_usuario_interesse') and
+            (
+                not old_interesse_usuario_projeto or
+                input_body_dict.get('fl_usuario_interesse') != old_interesse_usuario_projeto.fl_usuario_interesse
+            )
+        )
+
+        fl_changed_projeto_interesse = (
+            input_body_dict.get('fl_projeto_interesse') and
+            (
+                not old_interesse_usuario_projeto or
+                input_body_dict.get('fl_projeto_interesse') != old_interesse_usuario_projeto.fl_projeto_interesse
+            )
+        )
+
+        if fl_changed_usuario_interesse or fl_changed_projeto_interesse:
+            fl_match = interesse_usuario_projeto.fl_match
+
+            if fl_match:
+                return await self.publish_match_notification(
+                    str(interesse_usuario_projeto.guid_usuario), projeto)
+
+            return (
+                await self.publish_usuario_projeto_interesse_notification(
+                    str(interesse_usuario_projeto.guid_usuario), projeto)
+                if fl_changed_usuario_interesse
+                else await self.publish_projeto_usuario_interesse_notification(
+                    str(interesse_usuario_projeto.guid_usuario), projeto)
+            )
+
+    async def upsert_interesse_usuario_projeto(
+        self, guid_usuario: str, guid_projeto: str, input_body: InteresseUsuarioProjetoInput
+    ):
+        # Capturando ID do projeto e verificando sua existência
+        projetos_db = await self.proj_repo.find_projetos_by_filtros(
+            filtros=[ProjetosModel.guid == guid_projeto]
+        )
+        if len(projetos_db) == 0:
+            raise exceptions.ProjectNotFoundException(
+                detail=f"Não foi encontrado um projeto com GUID = {guid_projeto}"
+            )
+        projeto = projetos_db[0]
+
+        # Criando ou atualizando o interesse do usuário pelo projeto (ou vice-versa)
+        input_body_dict = input_body.dict(exclude_unset=True)
+
+        old_interesse_usuario_projeto = await self.proj_repo.find_interesse_usuario_projeto(guid_usuario, projeto.id)
+
+        interesse_usuario_projeto = \
+            await self.proj_repo.upsert_interesse_usuario_projeto(
+                guid_usuario, projeto.id, input_body.dict(exclude_unset=True), old_interesse_usuario_projeto
+            )
+
+        # Publicação de notificações
+        await self.publish_notification_interesse(
+            projeto, old_interesse_usuario_projeto, interesse_usuario_projeto, input_body_dict)
+
         return interesse_usuario_projeto
 
     async def delete_interesse_usuario_projeto(self, guid_usuario: str, guid_projeto: str):
@@ -201,6 +327,64 @@ class ProjetosService:
             marcou como seu interesse
         """
         return await self.proj_repo.get_projetos_interesse_usuario(guid_usuario)
+
+    @staticmethod
+    def build_interesse_usuario_projeto_filters(
+        fl_usuario_interesse: Optional[bool] = None,
+        fl_projeto_interesse: Optional[bool] = None,
+        fl_match: Optional[bool] = None
+    ) -> List:
+        filters = []
+
+        if fl_usuario_interesse is not None:
+            filters.append(InteresseUsuarioProjeto.fl_usuario_interesse == fl_usuario_interesse)
+
+        if fl_projeto_interesse is not None:
+            filters.append(InteresseUsuarioProjeto.fl_projeto_interesse == fl_projeto_interesse)
+
+        if fl_match is not None:
+            filters.append(InteresseUsuarioProjeto.fl_match == fl_match)
+
+        return filters
+
+    async def get_usuarios_interessados_projeto_by_filtros(
+        self, guid_projeto: str, fl_usuario_interesse: Optional[bool] = None,
+        fl_projeto_interesse: Optional[bool] = None,
+        fl_match: Optional[bool] = None
+    ) -> List[InteresseUsuarioProjeto]:
+        """
+            Captura os usuários interessados pelo projeto ou que o projeto
+            está interessado
+
+            Podem ser adicionados filtros:
+
+            - fl_usuario_interesse: Interesse do usuário pelo projeto
+            - fl_projeto_interesse: Interesse do projeto pelo usuário
+            - fl_match: Match entre ambos
+        """
+
+        filters = self.build_interesse_usuario_projeto_filters(fl_usuario_interesse, fl_projeto_interesse, fl_match)
+        return await self.proj_repo.get_usuarios_interessados_projeto(guid_projeto, filters)
+
+    async def get_projetos_interesse_usuario_by_filtros(
+        self, guid_usuario: str, fl_usuario_interesse: Optional[bool] = None,
+        fl_projeto_interesse: Optional[bool] = None,
+        fl_match: Optional[bool] = None
+    ):
+        """
+            Captura os projetos que o usuário
+            marcou como seu interesse ou
+            projeto marcou o usuario como interesse
+
+            Podem ser adicionados filtros:
+
+            - fl_usuario_interesse: Interesse do usuário pelo projeto
+            - fl_projeto_interesse: Interesse do projeto pelo usuário
+            - fl_match: Match entre ambos
+        """
+
+        filters = self.build_interesse_usuario_projeto_filters(fl_usuario_interesse, fl_projeto_interesse, fl_match)
+        return await self.proj_repo.get_projetos_interesse_usuario(guid_usuario, filters)
 
     async def get_projetos_usuario(self, guid_usuario: str):
         """
