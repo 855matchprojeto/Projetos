@@ -1,11 +1,13 @@
 import uuid
 from uuid import UUID as GUID
 
-from sqlalchemy import Column, BigInteger, String
+from sqlalchemy import Column, BigInteger, String, ForeignKey
 from server.models import AuthenticatorBase
 from server.configuration import db
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+
+from server.models.arquivo_model import Arquivo
 
 
 class ProjetosModel(db.Base, AuthenticatorBase):
@@ -13,6 +15,7 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     Modelo de projeto
     possui relações com entidade, tag e usuario
     """
+
     def __init__(self, **kwargs):
         super(ProjetosModel, self).__init__(**kwargs)
 
@@ -22,7 +25,9 @@ class ProjetosModel(db.Base, AuthenticatorBase):
     guid = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
     titulo = Column(String(), nullable=False)
     descricao = Column(String())
-    url_imagem = Column(String())
+    url_imagem = Column(String())  # deprecated
+    id_imagem_projeto = Column(BigInteger, ForeignKey("tb_arquivo.id"), nullable=True)
+    imagem_projeto = relationship("Arquivo", primaryjoin=(id_imagem_projeto == Arquivo.id), uselist=False)
 
     rel_projeto_entidade = relationship(
         "RelacaoProjetoEntidadeModel",
