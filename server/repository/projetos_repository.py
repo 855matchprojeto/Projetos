@@ -309,7 +309,12 @@ class ProjetoRepository:
                 InteresseUsuarioProjeto,
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
-            where(*filters)
+            where(*filters).
+            where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
+            .options(
+                selectinload(ProjetosModel.titulo),
+                selectinload(ProjetosModel.imagem_projeto)
+            )
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
@@ -326,6 +331,10 @@ class ProjetoRepository:
                 RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
             ).
             where(RelacaoProjetoUsuarioModel.guid_user == guid_usuario)
+            .options(
+                selectinload(ProjetosModel.titulo),
+                selectinload(ProjetosModel.imagem_projeto)
+            )
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
@@ -364,6 +373,9 @@ class ProjetoRepository:
             where(
                 RelacaoProjetoUsuarioModel.id_projetos == id_projeto,
                 FuncaoProjetoModel.nome == 'OWNER'
+            ).options(
+                selectinload(ProjetosModel.titulo),
+                selectinload(ProjetosModel.imagem_projeto)
             )
         )
 

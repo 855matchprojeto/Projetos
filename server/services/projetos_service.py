@@ -1,5 +1,6 @@
 from typing import List, Optional
 from server.configuration.environment import Environment
+from server.models.arquivo_model import Arquivo
 from server.repository.projetos_repository import ProjetoRepository
 from server.models.projetos_model import ProjetosModel
 from sqlalchemy import or_, and_
@@ -10,6 +11,8 @@ from server.models.funcao_projeto_model import FuncaoProjetoModel
 from typing import Any
 import json
 from server.schemas.usuario_schema import CurrentUserToken
+from server.services.arquivo_service import ArquivoService
+from server.schemas.projetos_schema import ProjetosInput, ProjetosInputUpdate
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
 from server.schemas.projetos_schema import ProjetosOutput
 
@@ -71,6 +74,7 @@ class ProjetosService:
         self,
         proj_repo: Optional[ProjetoRepository] = None,
         environment: Optional[Environment] = None,
+        arquivo_service: Optional[ArquivoService] = None,
         funcao_proj_repo: Optional[FuncoesProjetoRepository] = None,
         publisher_service: Optional[Any] = None
     ):
@@ -78,6 +82,26 @@ class ProjetosService:
         self.funcao_proj_repo = funcao_proj_repo
         self.environment = environment
         self.publisher_service = publisher_service
+        self.arquivo_service = arquivo_service
+
+    async def handle_input_imagem_perfil(
+        self, current_user: CurrentUserToken, projeto_input: ProjetosInput
+    ) -> Optional[Arquivo]:
+        """
+            Cria o arquivo da imagem do projeto do usuario e vincula
+            o id do arquivo criado no input
+        """
+
+        imagem_projeto_input = projeto_input.imagem_projeto
+        if imagem_projeto_input:
+            imagem_projeto = await self.arquivo_service.upload_arquivo(imagem_projeto_input, current_user)
+
+            projeto_input.id_imagem_projeto = imagem_projeto.id
+            projeto_input.imagem_projeto = None
+
+            return imagem_projeto
+
+        return None
 
     async def get(self, id=None, guid=None, titulo_ilike=None):
         """

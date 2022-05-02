@@ -4,6 +4,10 @@ from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
 
+from server.dependencies.get_s3_file_uploader_service import get_s3_file_uploader_service
+from server.services.file_uploader.uploader import FileUploaderService
+from server.repository.arquivo_repository import ArquivoRepository
+from server.services.arquivo_service import ArquivoService
 from server.repository.historico_projetos_repository import HistoricoProjetoRepository
 from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
 from server.repository.relacao_projeto_tag_repository import RelacaoProjetoTagRepository
@@ -70,7 +74,8 @@ class ProjetosController:
     async def post_projetos(self, data: ProjetosInput,
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
-                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+                            file_uploader_service: FileUploaderService = Depends(get_s3_file_uploader_service)):
         """
         Endpoint para criar um projeto
         Args:
@@ -104,10 +109,17 @@ class ProjetosController:
         del data["cursos"]
         del data["interesses"]
 
+        arquivo_service = ArquivoService(
+            arquivo_repo=ArquivoRepository(session, environment),
+            environment=environment,
+            file_uploader_service=file_uploader_service
+        )
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
-            FuncoesProjetoRepository(session, environment)
+            FuncoesProjetoRepository(session, environment),
+            arquivo_service=arquivo_service
         )
         # criando também o histórico
         hist_service = HistoricoProjetosService(
