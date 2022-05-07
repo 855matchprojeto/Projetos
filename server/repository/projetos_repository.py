@@ -3,7 +3,7 @@ from server.configuration.exceptions import ProjectNotFoundException
 from server.models.entidade_externa_model import EntidadeExternaModel
 from server.models.funcao_projeto_model import FuncaoProjetoModel
 from server.models.projetos_model import ProjetosModel
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, contains_eager
 from sqlalchemy import select, insert, literal_column, delete, update
 from typing import List, Optional
 from server.configuration.environment import Environment
@@ -309,10 +309,30 @@ class ProjetoRepository:
                 InteresseUsuarioProjeto,
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
-            where(*filters)
+            where(*filters).
+            options(
+                contains_eager(
+                    ProjetosModel.rel_projeto_interesse,
+                )
+            ).
+            execution_options(populate_existing=True)
         )
+
         query = await self.db_session.execute(stmt)
-        return query.scalars().all()
+
+        row_list = query.unique().all()
+        projetos_dict = [
+            dict(row)['ProjetosModel'].__dict__ for row in row_list
+        ]
+
+        for projeto_dict in projetos_dict:
+            interesse_usuario_projeto = projeto_dict.pop('rel_projeto_interesse')
+
+            projeto_dict['interesse_usuario_projeto'] = (
+                interesse_usuario_projeto[0] if interesse_usuario_projeto else None
+            )
+
+        return projetos_dict
 
     async def get_projetos_usuario(self, guid_usuario: str):
         """

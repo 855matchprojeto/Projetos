@@ -12,7 +12,7 @@ from server.services.projetos_service import ProjetosService
 from server.repository.projetos_repository import ProjetoRepository
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput, InteresseUsuarioProjetoInput
 from fastapi import APIRouter, Depends, Security, status, Response
-from server.schemas.projetos_schema import SimpleProjetosOutput
+from server.schemas.projetos_schema import SimpleProjetosOutput, ProjetoAndOwnInteresseUsuarioProjetoOutput
 from server.dependencies.get_sns_publisher_service import get_sns_publisher_service
 from server.services.aws_publisher_service import AWSPublisherService
 
@@ -125,7 +125,7 @@ async def get_current_user_projects_interested(
         "Projetos",
         "InteresseUsuarioProjeto"
     ],
-    response_model=List[SimpleProjetosOutput],
+    response_model=List[ProjetoAndOwnInteresseUsuarioProjetoOutput],
     summary='Retorna os projetos que o usuário marcou como de seu interesse',
     response_description='Retorna os projetos que o usuário marcou como de seu interesse',
     responses={
