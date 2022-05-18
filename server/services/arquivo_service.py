@@ -22,27 +22,27 @@ class ArquivoService:
         self.arquivo_repo = arquivo_repo
 
     async def upload_arquivo(
-        self, file_input: ArquivoInput  , current_user: CurrentUserToken
+        self, file_input: ArquivoInput, current_user: CurrentUserToken
     ) -> Arquivo:
         """
         Faz o upload do arquivo e o armazena na tabela de 'Arquivo'
         """
-
+        print(file_input)
         uploaded_file_output = self.file_uploader_service.upload(
             FileUploaderInput(
                 target=self.environment.AWS_S3_BUCKET,
                 region=self.environment.AWS_REGION_NAME,
-                key=f'u/{str(current_user.guid)}/profile/{str(uuid.uuid4())}/{file_input.file_name}',
-                type=file_input.file_type,
-                content=utils.decode_b64_str(file_input.b64_content)
+                key=f'u/{str(current_user.guid)}/project/{str(uuid.uuid4())}/{file_input["file_name"]}',
+                type=file_input["file_type"],
+                content=utils.decode_b64_str(file_input["b64_content"])
             )
         )
 
         return await self.arquivo_repo.insere_arquivo(
             {
                 'url': uploaded_file_output.url,
-                'file_type': file_input.file_type,
-                'file_name': file_input.file_name
+                'file_type': file_input["file_type"],
+                'file_name': file_input["file_name"]
             }
         )
 

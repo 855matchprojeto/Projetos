@@ -175,6 +175,9 @@ class ProjetoRepository:
                     selectinload(RelacaoProjetoTagModel.tag)
             ),
                 (
+                    selectinload(ProjetosModel.imagem_projeto)
+            ),
+                (
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
             ),

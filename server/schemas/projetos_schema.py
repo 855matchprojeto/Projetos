@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID as GUID
 
-from server.schemas.arquivo_schema import ArquivoInput
+from server.schemas.arquivo_schema import ArquivoInput, ArquivoOutput
 from server.schemas.entidade_externa_schema import EntidadeExternaOutput
 from server.schemas.tag_schema import TagOutput
 from server.schemas.interesse_schema import InteresseOutput
@@ -67,7 +67,7 @@ class ProjetosOutput(AuthenticatorModelOutput):
     interesses: Optional[List[InteresseOutput]] = Field(example=[])
     url_imagem: Optional[str] = Field(example='https://teste.com.br')
     id_imagem_projeto: Optional[int] = Field(example='2')
-    imagem_projeto: Optional[ArquivoInput]
+    imagem_projeto: Optional[ArquivoOutput]
     # usuarios: List[UsuarioOutput] = Field(example=[])
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
@@ -87,7 +87,7 @@ class SimpleProjetosOutput(AuthenticatorModelOutput):
     descricao: str = Field(example='Isso é um projeto')
     url_imagem: Optional[str] = Field(example='https://teste.com.br')
     id_imagem_projeto: Optional[int] = Field(example='2')
-    imagem_projeto: Optional[ArquivoInput]
+    imagem_projeto: Optional[ArquivoOutput]
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
 

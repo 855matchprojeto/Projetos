@@ -92,12 +92,12 @@ class ProjetosService:
             o id do arquivo criado no input
         """
 
-        imagem_projeto_input = projeto_input.imagem_projeto
+        imagem_projeto_input = projeto_input['imagem_projeto']
         if imagem_projeto_input:
             imagem_projeto = await self.arquivo_service.upload_arquivo(imagem_projeto_input, current_user)
 
-            projeto_input.id_imagem_projeto = imagem_projeto.id
-            projeto_input.imagem_projeto = None
+            projeto_input["id_imagem_projeto"] = imagem_projeto.id
+            del projeto_input["imagem_projeto"]
 
             return imagem_projeto
 
@@ -138,10 +138,11 @@ class ProjetosService:
 
         return projects
 
-    async def create(self, projeto_input, guid_usuario: str):
+    async def create(self, projeto_input, current_user: CurrentUserToken):
         """
         Método que faz a lógica de criar um projeto
         Args:
+            current_user: usuário
             projeto_input: projeto a ser criado
 
         Returns:
@@ -149,10 +150,12 @@ class ProjetosService:
         """
         if type(projeto_input) is not dict:
             projeto_input = projeto_input.convert_to_dict()
+
+        await self.handle_input_imagem_perfil(current_user, projeto_input)
         # Insere no banco de dados e retorna o projeto
         projeto = await self.proj_repo.insere_projeto(projeto_input)
         # Vinculando o usuário com uma função de owner
-        await self.link_user_as_owner(guid_usuario, projeto)
+        await self.link_user_as_owner(current_user.guid, projeto)
         return projeto
 
     async def link_user_as_owner(self, guid_usuario: str, projeto: ProjetosModel):
@@ -182,7 +185,7 @@ class ProjetosService:
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.atualiza_projeto(novo_projeto_dict)
 
-    async def update_by_guid(self, guid, projeto_input):
+    async def update_by_guid(self, guid, projeto_input, current_user):
         """
         Método que faz a lógica de atualizar um projeto pelo guid
         Args:
@@ -193,6 +196,7 @@ class ProjetosService:
             Projeto atualizado
         """
         novo_projeto_dict = projeto_input.convert_to_dict()
+        await self.handle_input_imagem_perfil(current_user, novo_projeto_dict)
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.update_projeto_by_guid(guid, novo_projeto_dict)
 
