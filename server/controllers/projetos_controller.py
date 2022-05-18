@@ -4,6 +4,10 @@ from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
 
+from server.dependencies.get_s3_file_uploader_service import get_s3_file_uploader_service
+from server.services.file_uploader.uploader import FileUploaderService
+from server.repository.arquivo_repository import ArquivoRepository
+from server.services.arquivo_service import ArquivoService
 from server.repository.historico_projetos_repository import HistoricoProjetoRepository
 from server.repository.relacao_projeto_entidade_repository import RelacaoProjetoEntidadeRepository
 from server.repository.relacao_projeto_tag_repository import RelacaoProjetoTagRepository
@@ -70,10 +74,12 @@ class ProjetosController:
     async def post_projetos(self, data: ProjetosInput,
                             session: AsyncSession = Depends(get_session),
                             environment: Environment = Depends(get_environment_cached),
-                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+                            file_uploader_service: FileUploaderService = Depends(get_s3_file_uploader_service)):
         """
         Endpoint para criar um projeto
         Args:
+            file_uploader_service: serviço do file uploader
             data: projeto a ser criado
             session: seção para funcionamento da api
             environment: configurações de ambiente
@@ -104,10 +110,17 @@ class ProjetosController:
         del data["cursos"]
         del data["interesses"]
 
+        arquivo_service = ArquivoService(
+            arquivo_repo=ArquivoRepository(session, environment),
+            environment=environment,
+            file_uploader_service=file_uploader_service
+        )
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
             environment,
-            FuncoesProjetoRepository(session, environment)
+            arquivo_service,
+            FuncoesProjetoRepository(session, environment),
         )
         # criando também o histórico
         hist_service = HistoricoProjetosService(
@@ -135,8 +148,8 @@ class ProjetosController:
             environment
         )
         guid_usuario = current_user.guid
-        await hist_service.create(data)
-        projeto = await service.create(data, guid_usuario)
+        # await hist_service.create(data)
+        projeto = await service.create(data, current_user)
         if entidades:
             data_entidade = []
             for entidade in entidades:
@@ -163,17 +176,19 @@ class ProjetosController:
                 data_interesses.append({'id_projetos': projeto.id, 'id_interesses': interesse})
             rel_interesse = await rel_interesse_service.mult_insert(data_interesses)
 
-        return projeto
+        return (await service.get(projeto.id))[0]
 
     @router.put(path="/projetos/{guid}", response_model=ProjetosOutput)
     @endpoint_exception_handler
     async def put_projetos(self, guid, data: ProjetosInputUpdate,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
-                           current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])):
+                           current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+                           file_uploader_service: FileUploaderService = Depends(get_s3_file_uploader_service)):
         """
         Endpoint para atualizar um projeto
         Args:
+            file_uploader_service: file service
             data: projeto a ser atualizado
             session: seção para funcionamento da api
             environment: configurações de ambiente
@@ -182,11 +197,19 @@ class ProjetosController:
         Returns:
             código 200 (ok) - projeto atualizado
         """
+        arquivo_service = ArquivoService(
+            arquivo_repo=ArquivoRepository(session, environment),
+            environment=environment,
+            file_uploader_service=file_uploader_service
+        )
+
         service = ProjetosService(
             ProjetoRepository(session, environment),
-            environment
+            environment,
+            arquivo_service,
         )
-        return await service.update_by_guid(guid=guid, projeto_input=data)
+        projeto = await service.update_by_guid(guid=guid, projeto_input=data, current_user=current_user)
+        return (await service.get(projeto.id))[0]
 
     @router.delete(path="/projetos/{guid}", status_code=status.HTTP_204_NO_CONTENT,)
     @endpoint_exception_handler

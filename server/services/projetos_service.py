@@ -1,5 +1,6 @@
 from typing import List, Optional
 from server.configuration.environment import Environment
+from server.models.arquivo_model import Arquivo
 from server.repository.projetos_repository import ProjetoRepository
 from server.models.projetos_model import ProjetosModel
 from sqlalchemy import or_, and_
@@ -10,6 +11,8 @@ from server.models.funcao_projeto_model import FuncaoProjetoModel
 from typing import Any
 import json
 from server.schemas.usuario_schema import CurrentUserToken
+from server.services.arquivo_service import ArquivoService
+from server.schemas.projetos_schema import ProjetosInput, ProjetosInputUpdate
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
 from server.schemas.projetos_schema import ProjetosOutput
 
@@ -71,6 +74,7 @@ class ProjetosService:
         self,
         proj_repo: Optional[ProjetoRepository] = None,
         environment: Optional[Environment] = None,
+        arquivo_service: Optional[ArquivoService] = None,
         funcao_proj_repo: Optional[FuncoesProjetoRepository] = None,
         publisher_service: Optional[Any] = None
     ):
@@ -78,6 +82,26 @@ class ProjetosService:
         self.funcao_proj_repo = funcao_proj_repo
         self.environment = environment
         self.publisher_service = publisher_service
+        self.arquivo_service = arquivo_service
+
+    async def handle_input_imagem_perfil(
+        self, current_user: CurrentUserToken, projeto_input: ProjetosInput
+    ) -> Optional[Arquivo]:
+        """
+            Cria o arquivo da imagem do projeto do usuario e vincula
+            o id do arquivo criado no input
+        """
+
+        imagem_projeto_input = projeto_input['imagem_projeto']
+        if imagem_projeto_input:
+            imagem_projeto = await self.arquivo_service.upload_arquivo(imagem_projeto_input, current_user)
+
+            projeto_input["id_imagem_projeto"] = imagem_projeto.id
+            del projeto_input["imagem_projeto"]
+
+            return imagem_projeto
+
+        return None
 
     async def get(self, id=None, guid=None, titulo_ilike=None):
         """
@@ -114,10 +138,11 @@ class ProjetosService:
 
         return projects
 
-    async def create(self, projeto_input, guid_usuario: str):
+    async def create(self, projeto_input, current_user: CurrentUserToken):
         """
         Método que faz a lógica de criar um projeto
         Args:
+            current_user: usuário
             projeto_input: projeto a ser criado
 
         Returns:
@@ -125,10 +150,12 @@ class ProjetosService:
         """
         if type(projeto_input) is not dict:
             projeto_input = projeto_input.convert_to_dict()
+
+        await self.handle_input_imagem_perfil(current_user, projeto_input)
         # Insere no banco de dados e retorna o projeto
         projeto = await self.proj_repo.insere_projeto(projeto_input)
         # Vinculando o usuário com uma função de owner
-        await self.link_user_as_owner(guid_usuario, projeto)
+        await self.link_user_as_owner(current_user.guid, projeto)
         return projeto
 
     async def link_user_as_owner(self, guid_usuario: str, projeto: ProjetosModel):
@@ -158,7 +185,7 @@ class ProjetosService:
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.atualiza_projeto(novo_projeto_dict)
 
-    async def update_by_guid(self, guid, projeto_input):
+    async def update_by_guid(self, guid, projeto_input, current_user):
         """
         Método que faz a lógica de atualizar um projeto pelo guid
         Args:
@@ -169,6 +196,7 @@ class ProjetosService:
             Projeto atualizado
         """
         novo_projeto_dict = projeto_input.convert_to_dict()
+        await self.handle_input_imagem_perfil(current_user, novo_projeto_dict)
         # Insere no banco de dados e retorna o projeto
         return await self.proj_repo.update_projeto_by_guid(guid, novo_projeto_dict)
 
