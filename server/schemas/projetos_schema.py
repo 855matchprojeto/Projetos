@@ -3,12 +3,13 @@ from pydantic import Field, BaseModel, EmailStr
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID as GUID
-
 from server.schemas.arquivo_schema import ArquivoInput, ArquivoOutput
 from server.schemas.entidade_externa_schema import EntidadeExternaOutput
 from server.schemas.tag_schema import TagOutput
 from server.schemas.interesse_schema import InteresseOutput
 from server.schemas.curso_schema import CursoOutput
+from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
+
 
 class ProjetosInputUpdate(AuthenticatorModelInput):
     """
@@ -90,6 +91,18 @@ class SimpleProjetosOutput(AuthenticatorModelOutput):
     imagem_projeto: Optional[ArquivoOutput]
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
+
+    def convert_to_dict(self):
+        return self.dict()
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
+
+
+class ProjetoAndOwnInteresseUsuarioProjetoOutput(SimpleProjetosOutput):
+
+    interesse_usuario_projeto: InteresseUsuarioProjetoOutput
 
     def convert_to_dict(self):
         return self.dict()
