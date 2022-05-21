@@ -26,7 +26,11 @@ class ProjetosService:
             'guid': str(projeto.guid),
             'titulo': projeto.titulo,
             'descricao': projeto.descricao,
-            'url_imagem': projeto.url_imagem
+            'url_imagem': (
+                projeto.imagem_projeto.url
+                if projeto.imagem_projeto
+                else None
+            )
         }
 
     @staticmethod
@@ -306,7 +310,7 @@ class ProjetosService:
         self, guid_usuario: str, guid_projeto: str, input_body: InteresseUsuarioProjetoInput
     ):
         # Capturando ID do projeto e verificando sua existência
-        projetos_db = await self.proj_repo.find_projetos_by_filtros(
+        projetos_db = await self.proj_repo.find_projetos_by_ids(
             filtros=[ProjetosModel.guid == guid_projeto]
         )
         if len(projetos_db) == 0:

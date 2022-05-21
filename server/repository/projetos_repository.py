@@ -394,8 +394,6 @@ class ProjetoRepository:
             where(
                 RelacaoProjetoUsuarioModel.id_projetos == id_projeto,
                 FuncaoProjetoModel.nome == 'OWNER'
-            ).options(
-                selectinload(ProjetosModel.imagem_projeto)
             )
         )
 
