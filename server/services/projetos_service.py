@@ -92,7 +92,7 @@ class ProjetosService:
             o id do arquivo criado no input
         """
 
-        imagem_projeto_input = projeto_input['imagem_projeto']
+        imagem_projeto_input = projeto_input.get('imagem_projeto')
         if imagem_projeto_input:
             imagem_projeto = await self.arquivo_service.upload_arquivo(imagem_projeto_input, current_user)
 

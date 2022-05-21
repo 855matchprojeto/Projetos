@@ -15,15 +15,15 @@ class ProjetosInputUpdate(AuthenticatorModelInput):
     """
     Schema de input do projeto para update
     """
-    titulo: str = Field(example='Projeto Exemplo')
-    descricao: str = Field(example='Isso é um projeto')
+    titulo: Optional[str] = Field(example='Projeto Exemplo')
+    descricao: Optional[str] = Field(example='Isso é um projeto')
     url_imagem: Optional[str] = Field(example='https://teste.com.br')
 
     id_imagem_projeto: Optional[int] = Field(example='2')
     imagem_projeto: Optional[ArquivoInput]
 
     def convert_to_dict(self):
-        return self.dict()
+        return self.dict(exclude_unset=True)
 
     class Config:
         orm_mode = True
@@ -45,7 +45,7 @@ class ProjetosInput(AuthenticatorModelInput):
     imagem_projeto: Optional[ArquivoInput]
 
     def convert_to_dict(self):
-        return self.dict()
+        return self.dict(exclude_unset=True)
 
     class Config:
         orm_mode = True
