@@ -281,7 +281,9 @@ class ProjetoRepository:
                     selectinload(ProjetosModel.relacao_projeto_interesse).
                         selectinload(RelacaoProjetoInteresseModel.interesse)
             )
-            ).where(*filters).limit(limit+1)
+            ).where(*filters).limit(limit+1).order_by(
+            ProjetosModel.titulo.asc()
+        )
 
         )
         query = await self.db_session.execute(stmt)
