@@ -17,7 +17,8 @@ from server.models.curso_model import CursoModel
 from server.models.interesse_model import InteresseModel
 from server.models.relacao_projeto_curso import RelacaoProjetoCursoModel
 from server.models.relacao_projeto_interesse import RelacaoProjetoInteresseModel
-
+from server.schemas.cursor_schema import Cursor
+from jose import jwt
 
 
 class ProjetoRepository:
@@ -25,6 +26,13 @@ class ProjetoRepository:
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
         self.environment = environment
+
+    def encode_cursor(self, cursor: dict):
+        return jwt.encode(
+            cursor,
+            self.environment.CURSOR_TOKEN_SECRET_KEY,
+            algorithm=self.environment.CURSOR_TOKEN_ALGORITHM
+        )
 
     async def insere_projeto(self, projeto_dict: dict) -> ProjetosModel:
         """
@@ -191,6 +199,110 @@ class ProjetoRepository:
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
+
+
+    async def find_projetos_paginated(self, filters, limit, cursor: Cursor) -> List[ProjetosModel]: #  project_ids: List[int]
+        """
+        Método que faz a query para pegar projetos por ids no banco de dados paginado
+        Esse método traz todas as informações associadas com o projeto
+        Args:
+            filtros: lista de ids de histórico de projetos
+
+        Returns:
+            Lista com projetos
+        """
+
+        # Offset a partir do cursor, geralmente é pelo ID
+        # Limit + 1 para capturar o ultimo perfil. Esse último perfil será usado no cursor
+        if cursor:
+            filters.append(ProjetoRepository.build_cursor_filter(cursor))
+
+        stmt = (
+            select(ProjetosModel)
+            .distinct()
+            .outerjoin(
+                RelacaoProjetoEntidadeModel,
+                RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                EntidadeExternaModel,
+                RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoTagModel,
+                RelacaoProjetoTagModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                TagModel,
+                RelacaoProjetoTagModel.id_tags == TagModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoUsuarioModel,
+                RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                FuncaoProjetoModel,
+                RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoCursoModel,
+                RelacaoProjetoCursoModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                CursoModel,
+                RelacaoProjetoCursoModel.id_cursos == CursoModel.id
+            )
+            .outerjoin(
+                RelacaoProjetoInteresseModel,
+                RelacaoProjetoInteresseModel.id_projetos == ProjetosModel.id
+            )
+            .outerjoin(
+                InteresseModel,
+                RelacaoProjetoInteresseModel.id_interesses == InteresseModel.id
+            )
+            .options(
+                (
+                    selectinload(ProjetosModel.rel_projeto_entidade).
+                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_tag).
+                    selectinload(RelacaoProjetoTagModel.tag)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_usuario).
+                    selectinload(RelacaoProjetoUsuarioModel.funcao)
+            ),
+                (
+                    selectinload(ProjetosModel.rel_projeto_curso).
+                        selectinload(RelacaoProjetoCursoModel.curso)
+            ),
+                (
+                    selectinload(ProjetosModel.relacao_projeto_interesse).
+                        selectinload(RelacaoProjetoInteresseModel.interesse)
+            )
+            ).where(*filters).limit(limit+1)
+
+        )
+        query = await self.db_session.execute(stmt)
+        projetos = query.scalars().all()
+
+        # Capturando o ultimo perfil e setando o next_cursor
+        next_cursor = None
+        if len(projetos) == (limit + 1):
+            last_project = projetos[limit]
+            next_cursor = {
+                'sort_field_key': cursor.sort_field_key if cursor else 'titulo',
+                'sort_field_type': cursor.sort_field_type if cursor else 'str',
+                'operator': 'ge',
+                'value': last_project.titulo
+            }
+
+        return {
+            "items": projetos[:limit],
+            "next_cursor": self.encode_cursor(next_cursor) if next_cursor else None,
+            "count": len(projetos[:limit])
+        }
 
     @staticmethod
     def update_body_if_match(obj_in_db: InteresseUsuarioProjeto, body: dict):
