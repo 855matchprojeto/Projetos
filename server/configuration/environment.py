@@ -31,6 +31,7 @@ class Environment(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_KEY: str
     AWS_REGION_NAME: str
+    AWS_S3_BUCKET: str
 
     # TOPIC ARN
 

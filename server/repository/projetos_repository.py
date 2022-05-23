@@ -183,6 +183,9 @@ class ProjetoRepository:
                     selectinload(RelacaoProjetoTagModel.tag)
             ),
                 (
+                    selectinload(ProjetosModel.imagem_projeto)
+            ),
+                (
                     selectinload(ProjetosModel.rel_projeto_usuario).
                     selectinload(RelacaoProjetoUsuarioModel.funcao)
             ),
@@ -424,6 +427,10 @@ class ProjetoRepository:
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
             where(*filters).
+            where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
+            .options(
+                selectinload(ProjetosModel.imagem_projeto)
+            ).
             options(
                 contains_eager(
                     ProjetosModel.rel_projeto_interesse,
@@ -460,6 +467,9 @@ class ProjetoRepository:
                 RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
             ).
             where(RelacaoProjetoUsuarioModel.guid_user == guid_usuario)
+            .options(
+                selectinload(ProjetosModel.imagem_projeto)
+            )
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
