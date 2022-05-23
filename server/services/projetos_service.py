@@ -1,7 +1,9 @@
+from fastapi import Request
 from typing import List, Optional
 from server.configuration.environment import Environment
 from server.models.arquivo_model import Arquivo
 from server.repository.projetos_repository import ProjetoRepository
+from jose import jwt
 from server.models.projetos_model import ProjetosModel
 from sqlalchemy import or_, and_
 from server.configuration import exceptions
@@ -14,10 +16,19 @@ from server.schemas.usuario_schema import CurrentUserToken
 from server.services.arquivo_service import ArquivoService
 from server.schemas.projetos_schema import ProjetosInput, ProjetosInputUpdate
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
+from server.schemas.cursor_schema import Cursor
 from server.schemas.projetos_schema import ProjetosOutput
 
 
 class ProjetosService:
+
+    def decode_cursor_info(self, encoded_cursor: str):
+        decoded_cursor_dict = jwt.decode(
+            encoded_cursor,
+            self.environment.CURSOR_TOKEN_SECRET_KEY,# verificar
+            algorithms=[self.environment.CURSOR_TOKEN_ALGORITHM]
+        )
+        return Cursor(**decoded_cursor_dict)
 
     @staticmethod
     def build_projeto_payload(projeto: ProjetosModel):
@@ -73,6 +84,36 @@ class ProjetosService:
             owners=owners
         )
         return json.dumps(payload_dict)
+
+    @staticmethod
+    def get_previous_url(request: Request):
+        return str(request.url)
+
+    @staticmethod
+    def get_next_url(request: Request, path: str, next_encoded_cursor: str):
+        if not next_encoded_cursor:
+            return None
+
+        query_params_dict = dict(request.query_params)
+        query_string_builder = '?'
+
+        for query_param_key in [key for key in query_params_dict.keys() if key != 'cursor']:
+            query_param_value = query_params_dict[query_param_key]
+            query_string_builder += f'{query_param_key}={query_param_value}&'
+
+        query_string_builder += f'cursor={next_encoded_cursor}'
+
+        return f"{request.base_url}{path}{query_string_builder}"
+
+    @staticmethod
+    def handle_projetos_pagination(
+            paginated_projeto_dict: dict, previous_encoded_cursor: str, request: Request
+    ):
+        next_encoded_cursor = paginated_projeto_dict['next_cursor']
+        paginated_projeto_dict['previous_cursor'] = previous_encoded_cursor
+        paginated_projeto_dict['previous_url'] = ProjetosService.get_previous_url(request)
+        paginated_projeto_dict['next_url'] = ProjetosService.get_next_url(request, request.url.path, next_encoded_cursor)
+        return paginated_projeto_dict
 
     def __init__(
         self,
@@ -141,6 +182,52 @@ class ProjetosService:
             project.interesses = interesses
 
         return projects
+
+    async def get_paginated(self, request: Request, limit: int, cursor: str, id=None, guid=None, titulo_ilike=None):
+        """
+        Método que faz a lógica de pegar os projetos paginados
+        Args:
+            id: id do projeto
+            guid: guid do projeto
+
+        Returns:
+            Lista com os projetos
+        """
+        if id == None and guid == None:
+            filtros = []
+        else:
+            filtros = [
+                or_(
+                    ProjetosModel.id == id,
+                    ProjetosModel.guid == guid
+                )]
+
+        if titulo_ilike:
+            filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
+
+        decoded_cursor = self.decode_cursor_info(cursor) if cursor else None
+
+
+        # projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
+
+        paginated_projects_dict = await self.proj_repo. \
+            find_projetos_paginated(limit=limit, cursor=decoded_cursor, filters=filtros)
+
+        paginated_projects_dict = ProjetosService.handle_projetos_pagination(
+            paginated_projects_dict, cursor, request
+        )
+
+        for project in paginated_projects_dict['items']:
+            entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
+            tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
+            cursos = [rel_projeto_curso.curso for rel_projeto_curso in project.rel_projeto_curso]
+            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in project.relacao_projeto_interesse]
+            project.entidades = entidades
+            project.tags = tags
+            project.cursos = cursos
+            project.interesses = interesses
+
+        return paginated_projects_dict
 
     async def create(self, projeto_input, current_user: CurrentUserToken):
         """

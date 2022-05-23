@@ -14,3 +14,6 @@ class AuthenticatorModelInput(BaseModel):
 class AuthenticatorModelOutput(BaseModel):
     pass
 
+class ProjetosModelOutput(BaseModel):
+    pass
+
