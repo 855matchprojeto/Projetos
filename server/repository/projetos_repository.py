@@ -78,9 +78,9 @@ class ProjetoRepository:
         """
         stmt = (
             update(ProjetosModel).
-            returning(literal_column('*')).
-            where(ProjetosModel.guid == guid).
-            values(**projeto_update_dict)
+                returning(literal_column('*')).
+                where(ProjetosModel.guid == guid).
+                values(**projeto_update_dict)
         )
         query = await self.db_session.execute(stmt)
         if query.rowcount == 0:
@@ -120,7 +120,7 @@ class ProjetoRepository:
 
         await self.db_session.execute(stmt)
 
-    async def find_projetos_by_ids(self, filtros) -> List[ProjetosModel]: #  project_ids: List[int]
+    async def find_projetos_by_ids(self, filtros) -> List[ProjetosModel]:  # project_ids: List[int]
         """
         Método que faz a query para pegar projetos por ids no banco de dados
         Esse método traz todas as informações associadas com o projeto
@@ -132,79 +132,79 @@ class ProjetoRepository:
         """
         stmt = (
             select(ProjetosModel)
-            .distinct()
-            .outerjoin(
+                .distinct()
+                .outerjoin(
                 RelacaoProjetoEntidadeModel,
                 RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 EntidadeExternaModel,
                 RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoTagModel,
                 RelacaoProjetoTagModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 TagModel,
                 RelacaoProjetoTagModel.id_tags == TagModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoUsuarioModel,
                 RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 FuncaoProjetoModel,
                 RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoCursoModel,
                 RelacaoProjetoCursoModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 CursoModel,
                 RelacaoProjetoCursoModel.id_cursos == CursoModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoInteresseModel,
                 RelacaoProjetoInteresseModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 InteresseModel,
                 RelacaoProjetoInteresseModel.id_interesses == InteresseModel.id
             )
-            .options(
+                .options(
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
-                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
-            ),
+                        selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_tag).
-                    selectinload(RelacaoProjetoTagModel.tag)
-            ),
+                        selectinload(RelacaoProjetoTagModel.tag)
+                ),
                 (
                     selectinload(ProjetosModel.imagem_projeto)
-            ),
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
-                    selectinload(RelacaoProjetoUsuarioModel.funcao)
-            ),
+                        selectinload(RelacaoProjetoUsuarioModel.funcao)
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_curso).
                         selectinload(RelacaoProjetoCursoModel.curso)
-            ),
+                ),
                 (
                     selectinload(ProjetosModel.relacao_projeto_interesse).
                         selectinload(RelacaoProjetoInteresseModel.interesse)
-            )
+                )
             ).where(*filtros)
 
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
 
-
-    async def find_projetos_paginated(self, filters, limit, cursor: Cursor) -> List[ProjetosModel]: #  project_ids: List[int]
+    async def find_projetos_paginated(self, filters, limit, cursor: Cursor) -> List[
+        ProjetosModel]:  # project_ids: List[int]
         """
         Método que faz a query para pegar projetos por ids no banco de dados paginado
         Esse método traz todas as informações associadas com o projeto
@@ -222,71 +222,74 @@ class ProjetoRepository:
 
         stmt = (
             select(ProjetosModel)
-            .distinct()
-            .outerjoin(
+                .distinct()
+                .outerjoin(
                 RelacaoProjetoEntidadeModel,
                 RelacaoProjetoEntidadeModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 EntidadeExternaModel,
                 RelacaoProjetoEntidadeModel.id_entidade == EntidadeExternaModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoTagModel,
                 RelacaoProjetoTagModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 TagModel,
                 RelacaoProjetoTagModel.id_tags == TagModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoUsuarioModel,
                 RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 FuncaoProjetoModel,
                 RelacaoProjetoUsuarioModel.id_funcao == FuncaoProjetoModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoCursoModel,
                 RelacaoProjetoCursoModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 CursoModel,
                 RelacaoProjetoCursoModel.id_cursos == CursoModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 RelacaoProjetoInteresseModel,
                 RelacaoProjetoInteresseModel.id_projetos == ProjetosModel.id
             )
-            .outerjoin(
+                .outerjoin(
                 InteresseModel,
                 RelacaoProjetoInteresseModel.id_interesses == InteresseModel.id
             )
-            .options(
+                .options(
                 (
                     selectinload(ProjetosModel.rel_projeto_entidade).
-                    selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
-            ),
+                        selectinload(RelacaoProjetoEntidadeModel.entidade_externa)
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_tag).
-                    selectinload(RelacaoProjetoTagModel.tag)
-            ),
+                        selectinload(RelacaoProjetoTagModel.tag)
+                ),
+                (
+                    selectinload(ProjetosModel.imagem_projeto)
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_usuario).
-                    selectinload(RelacaoProjetoUsuarioModel.funcao)
-            ),
+                        selectinload(RelacaoProjetoUsuarioModel.funcao)
+                ),
                 (
                     selectinload(ProjetosModel.rel_projeto_curso).
                         selectinload(RelacaoProjetoCursoModel.curso)
-            ),
+                ),
                 (
                     selectinload(ProjetosModel.relacao_projeto_interesse).
                         selectinload(RelacaoProjetoInteresseModel.interesse)
+                )
+            ).where(*filters).limit(limit + 1).order_by(
+                ProjetosModel.titulo.asc()
             )
-            ).where(*filters).limit(limit+1).order_by(
-            ProjetosModel.titulo.asc()
-        )
 
         )
         query = await self.db_session.execute(stmt)
@@ -312,9 +315,9 @@ class ProjetoRepository:
     @staticmethod
     def update_body_if_match(obj_in_db: InteresseUsuarioProjeto, body: dict):
         fl_usuario_interesse = (
-           body['fl_usuario_interesse']
-           if 'fl_usuario_interesse' in body
-           else obj_in_db.fl_usuario_interesse if obj_in_db else False
+            body['fl_usuario_interesse']
+            if 'fl_usuario_interesse' in body
+            else obj_in_db.fl_usuario_interesse if obj_in_db else False
         )
 
         fl_projeto_interesse = (
@@ -328,8 +331,8 @@ class ProjetoRepository:
         body['fl_match'] = fl_match
 
     async def upsert_interesse_usuario_projeto(
-        self, guid_usuario: str, id_projeto: int, body: dict,
-        obj_in_db: Optional[InteresseUsuarioProjeto] = None
+            self, guid_usuario: str, id_projeto: int, body: dict,
+            obj_in_db: Optional[InteresseUsuarioProjeto] = None
     ) -> InteresseUsuarioProjeto:
         self.update_body_if_match(obj_in_db, body)
 
@@ -338,11 +341,11 @@ class ProjetoRepository:
         return await self.insert_interesse_usuario_projeto(guid_usuario, id_projeto, body)
 
     async def find_interesse_usuario_projeto(
-        self, guid_usuario: str, id_projeto: int
+            self, guid_usuario: str, id_projeto: int
     ) -> InteresseUsuarioProjeto:
         stmt = (
             select(InteresseUsuarioProjeto).
-            where(
+                where(
                 InteresseUsuarioProjeto.guid_usuario == guid_usuario,
                 InteresseUsuarioProjeto.id_projeto == id_projeto
             )
@@ -351,28 +354,28 @@ class ProjetoRepository:
         return query.scalars().first()
 
     async def update_interesse_usuario_projeto(
-        self, guid_usuario: str, id_projeto: int, body: dict
+            self, guid_usuario: str, id_projeto: int, body: dict
     ) -> InteresseUsuarioProjeto:
         stmt = (
             update(InteresseUsuarioProjeto).
-            where(
+                where(
                 InteresseUsuarioProjeto.id_projeto == id_projeto,
                 InteresseUsuarioProjeto.guid_usuario == guid_usuario,
             ).
-            returning(literal_column('*')).
-            values(**body)
+                returning(literal_column('*')).
+                values(**body)
         )
         query = await self.db_session.execute(stmt)
         row_to_dict = dict(query.fetchone())
         return InteresseUsuarioProjeto(**row_to_dict)
 
     async def insert_interesse_usuario_projeto(
-        self, guid_usuario: str, id_projeto: int, body: dict
+            self, guid_usuario: str, id_projeto: int, body: dict
     ) -> InteresseUsuarioProjeto:
         stmt = (
             insert(InteresseUsuarioProjeto).
-            returning(literal_column('*')).
-            values(
+                returning(literal_column('*')).
+                values(
                 id_projeto=id_projeto,
                 guid_usuario=guid_usuario,
                 **body
@@ -385,7 +388,7 @@ class ProjetoRepository:
     async def delete_interesse_usuario_projeto_by_filtros(self, filtros) -> None:
         stmt = (
             delete(InteresseUsuarioProjeto).
-            where(*filtros)
+                where(*filtros)
         )
         await self.db_session.execute(stmt)
 
@@ -401,11 +404,11 @@ class ProjetoRepository:
 
         stmt = (
             select(InteresseUsuarioProjeto).
-            join(
+                join(
                 ProjetosModel,
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
-            where(*filters)
+                where(*filters)
         )
         query = await self.db_session.execute(stmt)
         return query.scalars().all()
@@ -422,21 +425,21 @@ class ProjetoRepository:
 
         stmt = (
             select(ProjetosModel).
-            join(
+                join(
                 InteresseUsuarioProjeto,
                 InteresseUsuarioProjeto.id_projeto == ProjetosModel.id
             ).
-            where(*filters).
-            where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
-            .options(
+                where(*filters).
+                where(InteresseUsuarioProjeto.guid_usuario == guid_usuario)
+                .options(
                 selectinload(ProjetosModel.imagem_projeto)
             ).
-            options(
+                options(
                 contains_eager(
                     ProjetosModel.rel_projeto_interesse,
                 )
             ).
-            execution_options(populate_existing=True)
+                execution_options(populate_existing=True)
         )
 
         query = await self.db_session.execute(stmt)
@@ -462,12 +465,12 @@ class ProjetoRepository:
         """
         stmt = (
             select(ProjetosModel).
-            join(
+                join(
                 RelacaoProjetoUsuarioModel,
                 RelacaoProjetoUsuarioModel.id_projetos == ProjetosModel.id
             ).
-            where(RelacaoProjetoUsuarioModel.guid_user == guid_usuario)
-            .options(
+                where(RelacaoProjetoUsuarioModel.guid_user == guid_usuario)
+                .options(
                 selectinload(ProjetosModel.imagem_projeto)
             )
         )
@@ -475,7 +478,7 @@ class ProjetoRepository:
         return query.scalars().all()
 
     async def insere_relacao_usuario_funcao_projeto(
-        self, id_funcao: int, guid_usuario: str, id_projeto: int
+            self, id_funcao: int, guid_usuario: str, id_projeto: int
     ):
         """
             Vincula uma função de projeto para um
@@ -483,8 +486,8 @@ class ProjetoRepository:
         """
         stmt = (
             insert(RelacaoProjetoUsuarioModel).
-            returning(literal_column('*')).
-            values(
+                returning(literal_column('*')).
+                values(
                 id_projetos=id_projeto,
                 id_funcao=id_funcao,
                 guid_user=guid_usuario
@@ -501,11 +504,11 @@ class ProjetoRepository:
         """
         stmt = (
             select(RelacaoProjetoUsuarioModel).
-            join(
+                join(
                 FuncaoProjetoModel,
                 FuncaoProjetoModel.id == RelacaoProjetoUsuarioModel.id_funcao
             ).
-            where(
+                where(
                 RelacaoProjetoUsuarioModel.id_projetos == id_projeto,
                 FuncaoProjetoModel.nome == 'OWNER'
             )
@@ -517,4 +520,3 @@ class ProjetoRepository:
         return [
             str(relacao.guid_user) for relacao in relacoes
         ]
-

@@ -14,10 +14,9 @@ from typing import Any
 import json
 from server.schemas.usuario_schema import CurrentUserToken
 from server.services.arquivo_service import ArquivoService
-from server.schemas.projetos_schema import ProjetosInput, ProjetosInputUpdate
+from server.schemas.projetos_schema import ProjetosInput
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
 from server.schemas.cursor_schema import Cursor
-from server.schemas.projetos_schema import ProjetosOutput
 
 
 class ProjetosService:
@@ -169,7 +168,6 @@ class ProjetosService:
 
         if titulo_ilike:
             filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
-
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
