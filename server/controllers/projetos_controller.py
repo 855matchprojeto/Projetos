@@ -3,6 +3,7 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Optional
 from typing import List
+from fastapi import Request
 
 from server.dependencies.get_s3_file_uploader_service import get_s3_file_uploader_service
 from server.services.file_uploader.uploader import FileUploaderService
@@ -15,7 +16,7 @@ from server.services.historico_projetos_service import HistoricoProjetosService
 from server.services.projetos_service import ProjetosService
 from server.services.relacao_projeto_entidade_service import RelacaoProjetoEntidadeService
 from server.services.relacao_projeto_tag_service import RelacaoProjetoTagService
-from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput, ProjetosInputUpdate
+from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput, ProjetosInputUpdate, PaginatedProjetoOutput
 from server.dependencies.get_current_user import get_current_user
 from server.schemas import usuario_schema
 from server.controllers import endpoint_exception_handler
@@ -31,7 +32,7 @@ from server.repository.relacao_projeto_curso_repository import RelacaoProjetoCur
 from server.repository.relacao_projeto_interesse_repository import RelacaoProjetoInteresseRepository
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
 from server.schemas import error_schema
-
+from server.controllers import pagination_parameters
 
 router = APIRouter()
 
@@ -68,6 +69,40 @@ class ProjetosController:
             environment
         )
         return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike)
+
+    @router.get("/projetos-pag", response_model=PaginatedProjetoOutput)
+    @endpoint_exception_handler
+    async def get_projetos_paginated(self, request: Request,
+                                     id: Optional[int] = None, guid: Optional[str] = None,
+                                     titulo_ilike: Optional[str] = None,
+                                     pagination_params: dict = Depends(pagination_parameters),
+                                     session: AsyncSession = Depends(get_session),
+                                     environment: Environment = Depends(get_environment_cached),
+                                     current_user: usuario_schema.CurrentUserToken = Security(get_current_user,
+                                                                                              scopes=[])
+                                     ):
+        """
+        Endpoint para pegar todos os projetos
+        Args:
+            id: (optional) id do histórico
+            guid: (optional) guid do histórico
+            session: seção para funcionamento da api
+            environment: configurações de ambiente
+            current_user: usuário fazendo a requisição
+
+        Returns:
+            código 200 (ok) - lista com projetos
+        """
+        limit = pagination_params['limit']
+        offset = pagination_params['cursor']
+
+        service = ProjetosService(
+            ProjetoRepository(session, environment),
+            environment
+        )
+        retorno = await service.get_paginated(id=id, guid=guid, titulo_ilike=titulo_ilike, limit=limit, cursor=offset,
+                                           request=request)
+        return retorno
 
     @router.post(path="/projetos", response_model=ProjetosOutput)
     @endpoint_exception_handler
@@ -211,7 +246,7 @@ class ProjetosController:
         projeto = await service.update_by_guid(guid=guid, projeto_input=data, current_user=current_user)
         return (await service.get(projeto.id))[0]
 
-    @router.delete(path="/projetos/{guid}", status_code=status.HTTP_204_NO_CONTENT,)
+    @router.delete(path="/projetos/{guid}", status_code=status.HTTP_204_NO_CONTENT, )
     @endpoint_exception_handler
     async def delete_projetos(self, guid: str,
                               session: AsyncSession = Depends(get_session),
@@ -260,13 +295,13 @@ class ProjetosController:
     )
     @endpoint_exception_handler
     async def get_usuarios_interessados_projeto_by_filtros(
-        self, guid_projeto: str,
-        fl_usuario_interesse: Optional[bool] = None,
-        fl_projeto_interesse: Optional[bool] = None,
-        fl_match: Optional[bool] = None,
-        _: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
-        session: AsyncSession = Depends(get_session),
-        environment: Environment = Depends(get_environment_cached),
+            self, guid_projeto: str,
+            fl_usuario_interesse: Optional[bool] = None,
+            fl_projeto_interesse: Optional[bool] = None,
+            fl_match: Optional[bool] = None,
+            _: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[]),
+            session: AsyncSession = Depends(get_session),
+            environment: Environment = Depends(get_environment_cached),
     ):
 
         """

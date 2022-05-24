@@ -1,4 +1,4 @@
-from server.schemas import AuthenticatorModelInput, AuthenticatorModelOutput
+from server.schemas import AuthenticatorModelInput, AuthenticatorModelOutput, ProjetosModelOutput
 from pydantic import Field, BaseModel, EmailStr
 from datetime import datetime
 from typing import List, Optional
@@ -110,4 +110,20 @@ class ProjetoAndOwnInteresseUsuarioProjetoOutput(SimpleProjetosOutput):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
+
+class PaginatedProjetoOutput(ProjetosModelOutput):
+
+    items: List[ProjetosOutput]
+    count: Optional[int] = Field(example='10')
+    previous_cursor: Optional[str] = Field(example='previous_cursor_token')
+    next_cursor: Optional[str] = Field(example='next_cursor_token')
+    previous_url: Optional[str] = Field(example='http://localhost/projetos-pag/?page_size=10&cursor=previous_cursor_token')
+    next_url: Optional[str] = Field(example='http://localhost/projetos-pag/?page_size=10&cursor=next_cursor_token')
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
+
+
+
 
