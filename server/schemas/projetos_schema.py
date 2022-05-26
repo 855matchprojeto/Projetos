@@ -10,7 +10,6 @@ from server.schemas.interesse_schema import InteresseOutput
 from server.schemas.curso_schema import CursoOutput
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
 
-
 class ProjetosInputUpdate(AuthenticatorModelInput):
     """
     Schema de input do projeto para update
