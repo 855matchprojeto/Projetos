@@ -17,6 +17,8 @@ from server.services.arquivo_service import ArquivoService
 from server.schemas.projetos_schema import ProjetosInput
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoInput
 from server.schemas.cursor_schema import Cursor
+from server.models.curso_model import CursoModel
+from server.models.interesse_model import InteresseModel
 
 
 class ProjetosService:
@@ -24,7 +26,7 @@ class ProjetosService:
     def decode_cursor_info(self, encoded_cursor: str):
         decoded_cursor_dict = jwt.decode(
             encoded_cursor,
-            self.environment.CURSOR_TOKEN_SECRET_KEY,# verificar
+            self.environment.CURSOR_TOKEN_SECRET_KEY,  # verificar
             algorithms=[self.environment.CURSOR_TOKEN_ALGORITHM]
         )
         return Cursor(**decoded_cursor_dict)
@@ -45,7 +47,7 @@ class ProjetosService:
 
     @staticmethod
     def build_interesse_usuario_projeto_msg_payload(
-        guid_usuario: str, owners: List[str], projeto: ProjetosModel
+            guid_usuario: str, owners: List[str], projeto: ProjetosModel
     ):
         payload_dict = dict(
             type='INTERESSE_USUARIO_PROJETO',
@@ -59,7 +61,7 @@ class ProjetosService:
 
     @staticmethod
     def build_interesse_projeto_usuario_msg_payload(
-        guid_usuario: str, projeto: ProjetosModel
+            guid_usuario: str, projeto: ProjetosModel
     ):
         payload_dict = dict(
             type='INTERESSE_PROJETO_USUARIO',
@@ -72,7 +74,7 @@ class ProjetosService:
 
     @staticmethod
     def build_match_msg_payload(
-        guid_usuario: str, owners: List[str], projeto: ProjetosModel
+            guid_usuario: str, owners: List[str], projeto: ProjetosModel
     ):
         payload_dict = dict(
             type='MATCH',
@@ -111,16 +113,17 @@ class ProjetosService:
         next_encoded_cursor = paginated_projeto_dict['next_cursor']
         paginated_projeto_dict['previous_cursor'] = previous_encoded_cursor
         paginated_projeto_dict['previous_url'] = ProjetosService.get_previous_url(request)
-        paginated_projeto_dict['next_url'] = ProjetosService.get_next_url(request, request.url.path, next_encoded_cursor)
+        paginated_projeto_dict['next_url'] = ProjetosService.get_next_url(request, request.url.path,
+                                                                          next_encoded_cursor)
         return paginated_projeto_dict
 
     def __init__(
-        self,
-        proj_repo: Optional[ProjetoRepository] = None,
-        environment: Optional[Environment] = None,
-        arquivo_service: Optional[ArquivoService] = None,
-        funcao_proj_repo: Optional[FuncoesProjetoRepository] = None,
-        publisher_service: Optional[Any] = None
+            self,
+            proj_repo: Optional[ProjetoRepository] = None,
+            environment: Optional[Environment] = None,
+            arquivo_service: Optional[ArquivoService] = None,
+            funcao_proj_repo: Optional[FuncoesProjetoRepository] = None,
+            publisher_service: Optional[Any] = None
     ):
         self.proj_repo = proj_repo
         self.funcao_proj_repo = funcao_proj_repo
@@ -129,7 +132,7 @@ class ProjetosService:
         self.arquivo_service = arquivo_service
 
     async def handle_input_imagem_perfil(
-        self, current_user: CurrentUserToken, projeto_input: ProjetosInput
+            self, current_user: CurrentUserToken, projeto_input: ProjetosInput
     ) -> Optional[Arquivo]:
         """
             Cria o arquivo da imagem do projeto do usuario e vincula
@@ -147,7 +150,9 @@ class ProjetosService:
 
         return None
 
-    async def get(self, id=None, guid=None, titulo_ilike=None):
+    async def get(self, id=None, guid=None, titulo_ilike=None, id_curso=None, curso_nome_referencia=None,
+                  id_interesse=None,
+                  interesse_nome_referencia=None):
         """
         Método que faz a lógica de pegar os projetos
         Args:
@@ -168,12 +173,28 @@ class ProjetosService:
 
         if titulo_ilike:
             filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
+
+        if curso_nome_referencia:
+            filtros.append(CursoModel.nome_referencia.ilike(f'%{curso_nome_referencia}%'))
+
+        if interesse_nome_referencia:
+            filtros.append(InteresseModel.nome_referencia.ilike(f'%{interesse_nome_referencia}%'))
+
+        if id_curso:
+            filtros.append(CursoModel.id == id_curso)
+
+        if id_interesse:
+            filtros.append(InteresseModel.id == id_interesse)
+
+        if titulo_ilike:
+            filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
             tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
             cursos = [rel_projeto_curso.curso for rel_projeto_curso in project.rel_projeto_curso]
-            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in project.relacao_projeto_interesse]
+            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in
+                          project.relacao_projeto_interesse]
             project.entidades = entidades
             project.tags = tags
             project.cursos = cursos
@@ -181,7 +202,9 @@ class ProjetosService:
 
         return projects
 
-    async def get_paginated(self, request: Request, limit: int, cursor: str, id=None, guid=None, titulo_ilike=None):
+    async def get_paginated(self, request: Request, limit: int, cursor: str, id=None, guid=None, titulo_ilike=None,
+                            id_curso=None, curso_nome_referencia=None, id_interesse=None,
+                            interesse_nome_referencia=None):
         """
         Método que faz a lógica de pegar os projetos paginados
         Args:
@@ -203,8 +226,19 @@ class ProjetosService:
         if titulo_ilike:
             filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
 
-        decoded_cursor = self.decode_cursor_info(cursor) if cursor else None
+        if curso_nome_referencia:
+            filtros.append(CursoModel.nome_referencia.ilike(f'%{curso_nome_referencia}%'))
 
+        if interesse_nome_referencia:
+            filtros.append(InteresseModel.nome_referencia.ilike(f'%{interesse_nome_referencia}%'))
+
+        if id_curso:
+            filtros.append(CursoModel.id == id_curso)
+
+        if id_interesse:
+            filtros.append(InteresseModel.id == id_interesse)
+
+        decoded_cursor = self.decode_cursor_info(cursor) if cursor else None
 
         # projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
 
@@ -219,7 +253,8 @@ class ProjetosService:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
             tags = [rel_projeto_tag.tag for rel_projeto_tag in project.rel_projeto_tag]
             cursos = [rel_projeto_curso.curso for rel_projeto_curso in project.rel_projeto_curso]
-            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in project.relacao_projeto_interesse]
+            interesses = [relacao_projeto_interesse.interesse for relacao_projeto_interesse in
+                          project.relacao_projeto_interesse]
             project.entidades = entidades
             project.tags = tags
             project.cursos = cursos
@@ -321,7 +356,7 @@ class ProjetosService:
         return interesse_usuario_projeto
 
     async def publish_match_notification(
-        self, guid_usuario: str, projeto: ProjetosModel
+            self, guid_usuario: str, projeto: ProjetosModel
     ):
         return self.publisher_service.publish(
             self.build_match_msg_payload(
@@ -331,7 +366,7 @@ class ProjetosService:
         )
 
     async def publish_projeto_usuario_interesse_notification(
-        self, guid_usuario: str, projeto: ProjetosModel
+            self, guid_usuario: str, projeto: ProjetosModel
     ):
         # Define um payload para a mensagem de criação
         # de interesse de um projeto para um usuário para o publicador de mensagem
@@ -344,7 +379,7 @@ class ProjetosService:
         )
 
     async def publish_usuario_projeto_interesse_notification(
-        self, guid_usuario: str, projeto: ProjetosModel
+            self, guid_usuario: str, projeto: ProjetosModel
     ):
         # Define um payload para a mensagem de criação
         # de interesse de um usuário para o projeto para o publicador de mensagem
@@ -357,23 +392,25 @@ class ProjetosService:
         )
 
     async def publish_notification_interesse(
-        self, projeto: ProjetosModel, old_interesse_usuario_projeto: InteresseUsuarioProjeto,
-        interesse_usuario_projeto: InteresseUsuarioProjeto, input_body_dict: dict
-     ):
+            self, projeto: ProjetosModel, old_interesse_usuario_projeto: InteresseUsuarioProjeto,
+            interesse_usuario_projeto: InteresseUsuarioProjeto, input_body_dict: dict
+    ):
         fl_changed_usuario_interesse = (
-            input_body_dict.get('fl_usuario_interesse') and
-            (
-                not old_interesse_usuario_projeto or
-                input_body_dict.get('fl_usuario_interesse') != old_interesse_usuario_projeto.fl_usuario_interesse
-            )
+                input_body_dict.get('fl_usuario_interesse') and
+                (
+                        not old_interesse_usuario_projeto or
+                        input_body_dict.get(
+                            'fl_usuario_interesse') != old_interesse_usuario_projeto.fl_usuario_interesse
+                )
         )
 
         fl_changed_projeto_interesse = (
-            input_body_dict.get('fl_projeto_interesse') and
-            (
-                not old_interesse_usuario_projeto or
-                input_body_dict.get('fl_projeto_interesse') != old_interesse_usuario_projeto.fl_projeto_interesse
-            )
+                input_body_dict.get('fl_projeto_interesse') and
+                (
+                        not old_interesse_usuario_projeto or
+                        input_body_dict.get(
+                            'fl_projeto_interesse') != old_interesse_usuario_projeto.fl_projeto_interesse
+                )
         )
 
         if fl_changed_usuario_interesse or fl_changed_projeto_interesse:
@@ -392,7 +429,7 @@ class ProjetosService:
             )
 
     async def upsert_interesse_usuario_projeto(
-        self, guid_usuario: str, guid_projeto: str, input_body: InteresseUsuarioProjetoInput
+            self, guid_usuario: str, guid_projeto: str, input_body: InteresseUsuarioProjetoInput
     ):
         # Capturando ID do projeto e verificando sua existência
         projetos_db = await self.proj_repo.find_projetos_by_ids(
@@ -447,9 +484,9 @@ class ProjetosService:
 
     @staticmethod
     def build_interesse_usuario_projeto_filters(
-        fl_usuario_interesse: Optional[bool] = None,
-        fl_projeto_interesse: Optional[bool] = None,
-        fl_match: Optional[bool] = None
+            fl_usuario_interesse: Optional[bool] = None,
+            fl_projeto_interesse: Optional[bool] = None,
+            fl_match: Optional[bool] = None
     ) -> List:
         filters = []
 
@@ -465,9 +502,9 @@ class ProjetosService:
         return filters
 
     async def get_usuarios_interessados_projeto_by_filtros(
-        self, guid_projeto: str, fl_usuario_interesse: Optional[bool] = None,
-        fl_projeto_interesse: Optional[bool] = None,
-        fl_match: Optional[bool] = None
+            self, guid_projeto: str, fl_usuario_interesse: Optional[bool] = None,
+            fl_projeto_interesse: Optional[bool] = None,
+            fl_match: Optional[bool] = None
     ) -> List[InteresseUsuarioProjeto]:
         """
             Captura os usuários interessados pelo projeto ou que o projeto
@@ -484,9 +521,9 @@ class ProjetosService:
         return await self.proj_repo.get_usuarios_interessados_projeto(guid_projeto, filters)
 
     async def get_projetos_interesse_usuario_by_filtros(
-        self, guid_usuario: str, fl_usuario_interesse: Optional[bool] = None,
-        fl_projeto_interesse: Optional[bool] = None,
-        fl_match: Optional[bool] = None
+            self, guid_usuario: str, fl_usuario_interesse: Optional[bool] = None,
+            fl_projeto_interesse: Optional[bool] = None,
+            fl_match: Optional[bool] = None
     ):
         """
             Captura os projetos que o usuário
@@ -509,4 +546,3 @@ class ProjetosService:
             pertence com algum vínculo de função no projeto
         """
         return await self.proj_repo.get_projetos_usuario(guid_usuario)
-
