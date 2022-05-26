@@ -48,6 +48,10 @@ class ProjetosController:
     @endpoint_exception_handler
     async def get_projetos(self, id: Optional[int] = None, guid: Optional[str] = None,
                            titulo_ilike: Optional[str] = None,
+                           id_curso: Optional[int] = None,
+                           curso_nome_referencia: Optional[str] = None,
+                           id_interesse: Optional[int] = None,
+                           interesse_nome_referencia: Optional[str] = None,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
@@ -68,12 +72,19 @@ class ProjetosController:
             ProjetoRepository(session, environment),
             environment
         )
-        return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike)
+        return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike,
+                                 id_curso=id_curso, curso_nome_referencia=curso_nome_referencia,
+                                 id_interesse=id_interesse, interesse_nome_referencia=interesse_nome_referencia
+                                 )
 
     @router.get("/projetos-pag", response_model=PaginatedProjetoOutput)
     @endpoint_exception_handler
     async def get_projetos_paginated(self, request: Request,
                                      id: Optional[int] = None, guid: Optional[str] = None,
+                                     id_curso: Optional[int] = None,
+                                     curso_nome_referencia: Optional[str] = None,
+                                     id_interesse: Optional[int] = None,
+                                     interesse_nome_referencia: Optional[str] = None,
                                      titulo_ilike: Optional[str] = None,
                                      pagination_params: dict = Depends(pagination_parameters),
                                      session: AsyncSession = Depends(get_session),
@@ -85,8 +96,6 @@ class ProjetosController:
         Endpoint para pegar todos os projetos
         Args:
             id: (optional) id do histórico
-            guid: (optional) guid do histórico
-            session: seção para funcionamento da api
             environment: configurações de ambiente
             current_user: usuário fazendo a requisição
 
@@ -101,7 +110,10 @@ class ProjetosController:
             environment
         )
         retorno = await service.get_paginated(id=id, guid=guid, titulo_ilike=titulo_ilike, limit=limit, cursor=offset,
-                                           request=request)
+                                              request=request, id_curso=id_curso,
+                                              curso_nome_referencia=curso_nome_referencia,
+                                              id_interesse=id_interesse,
+                                              interesse_nome_referencia=interesse_nome_referencia)
         return retorno
 
     @router.post(path="/projetos", response_model=ProjetosOutput)
