@@ -136,27 +136,26 @@ class ProjetosController:
             código 200 (ok) - projeto criado
         """
         data = data.convert_to_dict()
-        if data["tags"]:
+        if data.get("tags"):
             tags = data["tags"]
+            del data["tags"]
         else:
             tags = []
-        if data["entidades"]:
+        if data.get("entidades"):
             entidades = data["entidades"]
+            del data["entidades"]
         else:
             entidades = []
-        if data["cursos"]:
+        if data.get("cursos"):
             cursos = data["cursos"]
+            del data["cursos"]
         else:
             cursos = []
-        if data["interesses"]:
+        if data.get("interesses"):
             interesses = data["interesses"]
+            del data["interesses"]
         else:
             interesses = []
-        del data["tags"]
-        del data["entidades"]
-        del data["cursos"]
-        del data["interesses"]
-
         arquivo_service = ArquivoService(
             arquivo_repo=ArquivoRepository(session, environment),
             environment=environment,
