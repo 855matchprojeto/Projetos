@@ -19,6 +19,8 @@ from server.models.relacao_projeto_curso import RelacaoProjetoCursoModel
 from server.models.relacao_projeto_interesse import RelacaoProjetoInteresseModel
 from server.schemas.cursor_schema import Cursor
 from jose import jwt
+from sqlalchemy.sql import operators
+
 
 
 class ProjetoRepository:
@@ -26,6 +28,45 @@ class ProjetoRepository:
     def __init__(self, db_session: AsyncSession, environment: Optional[Environment] = None):
         self.db_session = db_session
         self.environment = environment
+
+    @staticmethod
+    def get_operator_dictionary():
+        return {
+            'ge': operators.ge,
+            'gt': operators.gt,
+            'le': operators.le,
+            'lt': operators.lt
+        }
+
+    @staticmethod
+    def get_default_cursor_filter(sort_field_key, cursor_value, _operator):
+        return _operator(getattr(ProjetosModel, sort_field_key), cursor_value)
+
+    @staticmethod
+    def get_int_cursor_filter(sort_field_key, cursor_value, _operator):
+        return _operator(getattr(ProjetosModel, sort_field_key), int(cursor_value))
+
+    @staticmethod
+    def get_cursor_filter_factory():
+        return {
+            "int": ProjetoRepository.get_int_cursor_filter,
+            "str": ProjetoRepository.get_default_cursor_filter
+        }
+
+    @staticmethod
+    def build_cursor_filter(cursor: Cursor):
+        # Factory e builder descrevem como construir o filtro
+        cursor_field_factory = ProjetoRepository.get_cursor_filter_factory()
+        cursor_operator_factory = ProjetoRepository.get_operator_dictionary()
+        cursor_field_type = cursor.sort_field_type
+        cursor_field_builder = cursor_field_factory[cursor_field_type]
+        # Retornando o resultado usando o builder com os argumentos
+        cursor_field_key = cursor.sort_field_key
+        cursor_value = cursor.value
+        cursor_operator = cursor_operator_factory[cursor.operator]
+        return cursor_field_builder(cursor_field_key, cursor_value, cursor_operator)
+
+
 
     def encode_cursor(self, cursor: dict):
         return jwt.encode(
