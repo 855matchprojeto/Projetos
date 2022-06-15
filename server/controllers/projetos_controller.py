@@ -34,6 +34,17 @@ from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProj
 from server.schemas import error_schema
 from server.controllers import pagination_parameters
 
+async def all_profiles_query_params(
+    interests_in: Optional[List[int]] = perfil_schema.InterestQuery,
+    courses_in: Optional[List[int]] = perfil_schema.CourseQuery,
+    display_name_ilike: Optional[str] = perfil_schema.DisplayNameIlikeQuery
+):
+    return {
+        "interests_in": interests_in,
+        "courses_in": courses_in,
+        "display_name_ilike": display_name_ilike
+    }
+
 router = APIRouter()
 
 projetos_router = dict(
@@ -48,9 +59,9 @@ class ProjetosController:
     @endpoint_exception_handler
     async def get_projetos(self, id: Optional[int] = None, guid: Optional[str] = None,
                            titulo_ilike: Optional[str] = None,
-                           id_curso: Optional[int] = None,
+                           id_curso: Optional[List[int]] = None,
                            curso_nome_referencia: Optional[str] = None,
-                           id_interesse: Optional[int] = None,
+                           id_interesse: Optional[List[int]] = None,
                            interesse_nome_referencia: Optional[str] = None,
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),

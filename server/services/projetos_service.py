@@ -181,10 +181,10 @@ class ProjetosService:
             filtros.append(InteresseModel.nome_referencia.ilike(f'%{interesse_nome_referencia}%'))
 
         if id_curso:
-            filtros.append(CursoModel.id == id_curso)
+            filtros.append(CursoModel.id.in_(id_curso))
 
         if id_interesse:
-            filtros.append(InteresseModel.id == id_interesse)
+            filtros.append(InteresseModel.id.in_(id_interesse))
 
         if titulo_ilike:
             filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
