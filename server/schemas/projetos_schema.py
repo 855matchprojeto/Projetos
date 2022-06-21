@@ -9,6 +9,20 @@ from server.schemas.tag_schema import TagOutput
 from server.schemas.interesse_schema import InteresseOutput
 from server.schemas.curso_schema import CursoOutput
 from server.schemas.interesse_usuario_projeto_schema import InteresseUsuarioProjetoOutput
+from fastapi import Query
+
+
+InterestQuery = Query(
+    None,
+    title="Query string para filtrar projetos a partir dos IDS dos interesses vinculados ao projeto",
+    description="Query string para filtrar projetos a partir dos IDS dos interesses vinculados ao projeto"
+)
+
+CourseQuery = Query(
+    None,
+    title="Query string para filtrar projetos a partir dos IDS dos cursos vinculados ao projeto",
+    description="Query string para filtrar projetos a partir dos IDS dos cursos vinculados ao projeto",
+)
 
 class ProjetosInputUpdate(AuthenticatorModelInput):
     """

@@ -18,7 +18,7 @@ from server.services.relacao_projeto_entidade_service import RelacaoProjetoEntid
 from server.services.relacao_projeto_tag_service import RelacaoProjetoTagService
 from server.schemas.projetos_schema import ProjetosOutput, ProjetosInput, ProjetosInputUpdate, PaginatedProjetoOutput
 from server.dependencies.get_current_user import get_current_user
-from server.schemas import usuario_schema
+from server.schemas import usuario_schema, projetos_schema
 from server.controllers import endpoint_exception_handler
 from server.configuration.db import AsyncSession
 from server.dependencies.session import get_session
@@ -42,16 +42,25 @@ projetos_router = dict(
 )
 
 
+async def all_projects_query_params(
+    interests_in: Optional[List[int]] = projetos_schema.InterestQuery,
+    courses_in: Optional[List[int]] = projetos_schema.CourseQuery,
+):
+    return {
+        "interests_in": interests_in,
+        "courses_in": courses_in,
+    }
+
+
 @cbv(router)
 class ProjetosController:
     @router.get("/projetos", response_model=List[ProjetosOutput])
     @endpoint_exception_handler
     async def get_projetos(self, id: Optional[int] = None, guid: Optional[str] = None,
                            titulo_ilike: Optional[str] = None,
-                           id_curso: Optional[int] = None,
                            curso_nome_referencia: Optional[str] = None,
-                           id_interesse: Optional[int] = None,
                            interesse_nome_referencia: Optional[str] = None,
+                           projects_query_params: dict = Depends(all_projects_query_params),
                            session: AsyncSession = Depends(get_session),
                            environment: Environment = Depends(get_environment_cached),
                            current_user: usuario_schema.CurrentUserToken = Security(get_current_user, scopes=[])
@@ -73,22 +82,22 @@ class ProjetosController:
             environment
         )
         return await service.get(id=id, guid=guid, titulo_ilike=titulo_ilike,
-                                 id_curso=id_curso, curso_nome_referencia=curso_nome_referencia,
-                                 id_interesse=id_interesse, interesse_nome_referencia=interesse_nome_referencia
+                                  curso_nome_referencia=curso_nome_referencia,
+                                  interesse_nome_referencia=interesse_nome_referencia,
+                                 projects_query_params=projects_query_params
                                  )
 
     @router.get("/projetos-pag", response_model=PaginatedProjetoOutput)
     @endpoint_exception_handler
     async def get_projetos_paginated(self, request: Request,
                                      id: Optional[int] = None, guid: Optional[str] = None,
-                                     id_curso: Optional[int] = None,
                                      curso_nome_referencia: Optional[str] = None,
-                                     id_interesse: Optional[int] = None,
                                      interesse_nome_referencia: Optional[str] = None,
                                      titulo_ilike: Optional[str] = None,
                                      pagination_params: dict = Depends(pagination_parameters),
                                      session: AsyncSession = Depends(get_session),
                                      environment: Environment = Depends(get_environment_cached),
+                                     projects_query_params: dict = Depends(all_projects_query_params),
                                      current_user: usuario_schema.CurrentUserToken = Security(get_current_user,
                                                                                               scopes=[])
                                      ):
@@ -110,10 +119,10 @@ class ProjetosController:
             environment
         )
         retorno = await service.get_paginated(id=id, guid=guid, titulo_ilike=titulo_ilike, limit=limit, cursor=offset,
-                                              request=request, id_curso=id_curso,
+                                              request=request,
                                               curso_nome_referencia=curso_nome_referencia,
-                                              id_interesse=id_interesse,
-                                              interesse_nome_referencia=interesse_nome_referencia)
+                                              interesse_nome_referencia=interesse_nome_referencia,
+                                              projects_query_params=projects_query_params)
         return retorno
 
     @router.post(path="/projetos", response_model=ProjetosOutput)
