@@ -150,8 +150,8 @@ class ProjetosService:
 
         return None
 
-    async def get(self, id=None, guid=None, titulo_ilike=None, id_curso=None, curso_nome_referencia=None,
-                  id_interesse=None,
+    async def get(self, id=None, guid=None, titulo_ilike=None, curso_nome_referencia=None,
+                  projects_query_params=None,
                   interesse_nome_referencia=None):
         """
         Método que faz a lógica de pegar os projetos
@@ -180,14 +180,15 @@ class ProjetosService:
         if interesse_nome_referencia:
             filtros.append(InteresseModel.nome_referencia.ilike(f'%{interesse_nome_referencia}%'))
 
-        if id_curso:
-            filtros.append(CursoModel.id == id_curso)
-
-        if id_interesse:
-            filtros.append(InteresseModel.id == id_interesse)
-
         if titulo_ilike:
             filtros.append(ProjetosModel.titulo.ilike(f'%{titulo_ilike}%'))
+
+        if projects_query_params and projects_query_params['interests_in']:
+            filtros.append(InteresseModel.id.in_(projects_query_params['interests_in']))
+
+        if projects_query_params and projects_query_params['courses_in']:
+            filtros.append(CursoModel.id.in_(projects_query_params['courses_in']))
+
         projects = await self.proj_repo.find_projetos_by_ids(filtros=filtros)
         for project in projects:
             entidades = [rel_projeto_entidade.entidade_externa for rel_projeto_entidade in project.rel_projeto_entidade]
@@ -203,8 +204,8 @@ class ProjetosService:
         return projects
 
     async def get_paginated(self, request: Request, limit: int, cursor: str, id=None, guid=None, titulo_ilike=None,
-                            id_curso=None, curso_nome_referencia=None, id_interesse=None,
-                            interesse_nome_referencia=None):
+                            curso_nome_referencia=None,
+                            interesse_nome_referencia=None, projects_query_params=None):
         """
         Método que faz a lógica de pegar os projetos paginados
         Args:
@@ -232,11 +233,11 @@ class ProjetosService:
         if interesse_nome_referencia:
             filtros.append(InteresseModel.nome_referencia.ilike(f'%{interesse_nome_referencia}%'))
 
-        if id_curso:
-            filtros.append(CursoModel.id == id_curso)
+        if projects_query_params and projects_query_params['interests_in']:
+            filtros.append(InteresseModel.id.in_(projects_query_params['interests_in']))
 
-        if id_interesse:
-            filtros.append(InteresseModel.id == id_interesse)
+        if projects_query_params and projects_query_params['courses_in']:
+            filtros.append(CursoModel.id.in_(projects_query_params['courses_in']))
 
         decoded_cursor = self.decode_cursor_info(cursor) if cursor else None
 
